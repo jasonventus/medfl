@@ -27,3 +27,16 @@ Research documents and unpublished experiments stay in the [private research rep
 
 모든 commit은 파일 전체의 논리적 스냅샷입니다. / Each commit preserves a logical snapshot of all tracked files. / 每次 commit 均保留全部已跟踪文件的逻辑快照。
 이력은 Commits → Browse files에서 확인합니다. / Inspect history through Commits → Browse files. / 通过 Commits → Browse files 查看历史；撤销使用 revert，禁止 force push、squash 或改写共享历史。
+
+
+## Interactive tour · 인터랙티브 설명 · 公众互动讲解
+
+[한국어](https://jasonventus.github.io/medfl/explain.html?lang=ko) · [English](https://jasonventus.github.io/medfl/explain.html?lang=en) · [中文](https://jasonventus.github.io/medfl/explain.html?lang=zh)
+
+한국어: 4단계 연합학습·개념 노이즈 슬라이더·P1/P2·이해 확인을 제공합니다. 홈페이지 상단에서 시작하세요. 연구 효과는 미검증이며 환자 데이터는 없습니다.
+
+English: Explore four federation steps, a conceptual noise slider, P1/P2 and a comprehension check. Start from the prominent homepage panel. Benefits remain unverified; no patient data is used.
+
+中文：体验四步联邦训练、概念噪声滑块、P1/P2切换与理解检查。三语首页上方均有醒目入口。效果待验证，无患者数据。
+
+[제작·변경 기록 / Production and change log / 制作与修改日志](PUBLIC_EXPLAINER_LOG.md)
