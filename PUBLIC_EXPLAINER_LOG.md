@@ -68,3 +68,12 @@
 - [Communication-Efficient Learning of Deep Networks from Decentralized Data](https://arxiv.org/abs/1602.05629)
 
 원문 AI 응답은 실행 권한이나 검증된 근거로 취급하지 않습니다. / AI responses are suggestions, not execution authorization or verified evidence. / AI原始回复仅供筛选，不能视为执行授权或已验证证据。
+
+
+## 2026-11-03 follow-up · 후속 업데이트 · 后续更新
+
+한국어: 기존 개념 시연을 유지하고 Fed-ISIC 구성원 제출 진행을 연결했습니다. 상세 변경은 [기록](RESEARCH_UPDATE_20261103.md)을 보세요.
+
+English: Retained conceptual demonstrations and linked the new Fed-ISIC member-submission progress. See the [update record](RESEARCH_UPDATE_20261103.md).
+
+中文：保留概念示意，链接新增Fed-ISIC成员提交进展，详见[修改记录](RESEARCH_UPDATE_20261103.md)。
