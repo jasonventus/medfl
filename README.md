@@ -40,3 +40,16 @@ English: Explore four federation steps, a conceptual noise slider, P1/P2 and a c
 中文：体验四步联邦训练、概念噪声滑块、P1/P2切换与理解检查。三语首页上方均有醒目入口。效果待验证，无患者数据。
 
 [제작·변경 기록 / Production and change log / 制作与修改日志](PUBLIC_EXPLAINER_LOG.md)
+
+
+## 2026-11-03 · 연구 진행 / Research progress / 研究进展
+
+[한국어](https://jasonventus.github.io/medfl/progress.html?lang=ko) · [English](https://jasonventus.github.io/medfl/progress.html?lang=en) · [中文](https://jasonventus.github.io/medfl/progress.html?lang=zh)
+
+한국어: 范润堃의 Fed-ISIC 2–3차 제출을 반영했습니다. 사람 검토 대기이며 상세 수치는 비공개입니다.
+
+English: Reflects Fan Runkun’s Fed-ISIC rounds 2–3 submission. Human review is pending; detailed values remain private.
+
+中文：已反映范润堃的 Fed-ISIC 第二、三轮提交，仍待人类复核，详细数值继续留在私有研究库。
+
+[변경 기록 / Update log / 修改日志](RESEARCH_UPDATE_20261103.md)
