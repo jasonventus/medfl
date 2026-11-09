@@ -19,9 +19,20 @@ Research documents and unpublished experiments stay in the [private research rep
 
 研究文档及未公开实验保存在[私有研究仓库](https://github.com/jasonventus/healthcare-ai-project05)。本库仅含公开静态网页，不上传患者信息、凭据或未公开实验。
 
+## 2026-11-09 · 홈페이지 개편 / Homepage redesign / 首页改版
+
+[한국어](https://jasonventus.github.io/medfl/index.html) · [English](https://jasonventus.github.io/medfl/en.html) · [中文](https://jasonventus.github.io/medfl/zh.html) · [변경 기록 / Change log / 修改记录](RESEARCH_UPDATE_20261109.md)
+
+한국어: 6개 모듈(무엇을 연구하나·데이터·공개 데이터 연합·방법·진행·요약)과 초등학생용 애니메이션. 사실·상태·결과는 `tools/site_content.py` 한 곳에서 고치고 `python tools/build_site.py`로 세 언어 페이지와 `data/medfl-data.json`을 함께 다시 만듭니다. 상세 수치는 비공개이며 데이터 파일에서 `null`입니다.
+
+English: Six modules (question, data, public-data federation, methods, progress, summary) plus an animation for kids. Edit facts, statuses and results only in `tools/site_content.py`, then run `python tools/build_site.py` to regenerate all three pages and `data/medfl-data.json`. Detailed values stay private and are `null` in the data file.
+
+中文：6 个模块（研究什么、数据、公开数据联邦、方法、进展、总结）和小学生版动画。事实、状态和结果只改 `tools/site_content.py`，再运行 `python tools/build_site.py` 同时重建三语页面和 `data/medfl-data.json`。详细数值不公开，数据文件中为 `null`。
+
 ## Versions · 버전 · 历史版本
 - [v1 한국어](versions/v1/index.html) · [v1 English](versions/v1/en.html) · [v1 中文](versions/v1/zh.html)
 - [Before v2 한국어](versions/before-v2/index.html) · [Before v2 English](versions/before-v2/en.html) · [第二版前 中文](versions/before-v2/zh.html)
+- [v2 + 11-03 한국어](versions/v2-design/index.html) · [v2 + Nov 3 English](versions/v2-design/en.html) · [第二版 + 11-03 中文](versions/v2-design/zh.html)
 
 2026-11-02 · GitHub Pages로 이전하고 기존 공개 역사 페이지를 원문 보존했습니다. / Migrated to GitHub Pages and retained earlier public pages verbatim. / 迁移至 GitHub Pages，原样保留既有公开历史页面。
 

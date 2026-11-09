@@ -1,0 +1,35 @@
+.kids{background:#fff;border:1px solid #d2ddd5;border-radius:14px;padding:18px;margin-top:18px}
+.kids-stage{position:relative;border-radius:10px;overflow:hidden;background:#eaf2ec}
+.kids-stage svg{display:block;width:100%;height:auto}
+.kids-caption{font-size:clamp(18px,2.2vw,22px);line-height:1.6;min-height:3.4em;margin:14px 4px 10px;color:#152e32}
+.kids-caption b{display:block;font-size:13px;letter-spacing:.08em;color:#52736a;margin-bottom:2px}
+.kids-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.kids button{font:inherit;font-size:15px;padding:9px 16px;border-radius:999px;border:1px solid #b7c9c1;background:#fafbf8;color:#152e32;cursor:pointer}
+.kids button:hover{border-color:#487864}
+.kids button.primary{background:#173e40;color:#fff;border-color:#173e40}
+.kids button:disabled{opacity:.45;cursor:default}
+.kids button:focus-visible{outline:3px solid #e09b35;outline-offset:3px}
+.kids-dots{display:flex;gap:7px;margin-left:auto}
+.kids .kids-dot{width:14px;height:14px;min-width:14px;padding:0;border-radius:50%;border:1px solid #487864;background:transparent}
+.kids .kids-dot[aria-current=step]{background:#487864}
+/* scene visibility: the stage carries class s0…s6 */
+.kids [data-show]{opacity:0;transition:opacity .6s}
+.kids .s0 [data-show~="s0"],.kids .s1 [data-show~="s1"],.kids .s2 [data-show~="s2"],.kids .s3 [data-show~="s3"],.kids .s4 [data-show~="s4"],.kids .s5 [data-show~="s5"],.kids .s6 [data-show~="s6"]{opacity:1}
+.kids .rare-dot{transition:opacity .9s}
+.kids .s5 .rare-dot,.kids .s6 .rare-dot{opacity:.13}
+.kids .robot{transform:translate(328px,120px);transition:transform .8s}
+.kids .s2 .robot{animation:kids-robot 4.6s ease-in-out infinite}
+.kids .s3 .robot,.kids .s4 .robot,.kids .s5 .robot{transform:translate(196px,28px)}
+@keyframes kids-robot{0%,8%{transform:translate(38px,168px)}30%,40%{transform:translate(270px,168px)}62%,72%{transform:translate(618px,168px)}94%,100%{transform:translate(328px,120px)}}
+.kids .note{opacity:0}
+.kids .s3 .note{animation:kids-note 3.2s ease-in-out infinite}
+.kids .s3 .note.n1{animation-delay:.35s}.kids .s3 .note.n2{animation-delay:.7s}
+.kids .s4 .note{opacity:1;transform:translate(calc(var(--dx) * .5),calc(var(--dy) * .5))}
+@keyframes kids-note{0%{opacity:0;transform:translate(0,0)}15%{opacity:1}70%{opacity:1;transform:translate(var(--dx),var(--dy))}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
+.kids .fog circle{animation:kids-fog 6s ease-in-out infinite alternate}
+.kids .fog circle:nth-child(2n){animation-duration:7.5s}
+@keyframes kids-fog{from{transform:translateX(-14px)}to{transform:translateX(14px)}}
+.kids .server rect.glow{opacity:0;transition:opacity .6s}
+.kids .s3 .server rect.glow,.kids .s5 .server rect.glow{opacity:1}
+@media (prefers-reduced-motion:reduce){.kids *{animation:none!important;transition:none!important}.kids .s2 .robot{transform:translate(270px,168px)}.kids .s3 .note{opacity:1;transform:translate(var(--dx),var(--dy))}}
+@media (max-width:760px){.kids{padding:12px}.kids-dots{margin-left:0;width:100%}}

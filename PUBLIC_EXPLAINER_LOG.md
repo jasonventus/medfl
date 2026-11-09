@@ -77,3 +77,11 @@
 English: Retained conceptual demonstrations and linked the new Fed-ISIC member-submission progress. See the [update record](RESEARCH_UPDATE_20261103.md).
 
 中文：保留概念示意，链接新增Fed-ISIC成员提交进展，详见[修改记录](RESEARCH_UPDATE_20261103.md)。
+
+## 2026-11-09 · 공유 컴포넌트 / Shared component / 共享组件
+
+한국어: 4단계 애니메이션을 홈페이지와 같은 공유 컴포넌트로 바꿨습니다. 클라이언트 6개, 로컬 학습의 DP-SGD, 보호된 업데이트와 P2 통계 화살표를 구분합니다. 자세한 내용은 [기록](RESEARCH_UPDATE_20261109.md)을 보세요.
+
+English: The four-step animation now uses the same shared component as the homepages: six clients, DP-SGD during local training, and separate arrows for protected updates and P2 statistics. See the [record](RESEARCH_UPDATE_20261109.md).
+
+中文：四步动画改用与首页相同的共享组件：6 个客户端，本地训练标出 DP-SGD，受保护的更新与 P2 统计箭头分开显示，详见[修改记录](RESEARCH_UPDATE_20261109.md)。

@@ -1,0 +1,38 @@
+/* Shared component styles: six-client round (.flr) and concept noise slider (.nz). Used by the homepages and explain.html. */
+.flr-tag,.nz-tag{display:inline-block;margin:0 0 10px;padding:4px 11px;border-radius:6px;background:#fbefdc;border:1px solid #e0a860;color:#8a4b0f;font-size:13px;font-weight:750}
+.flr-stage{border-radius:10px;background:#f4f8f5;border:1px solid #d1ded4;overflow:hidden}
+.flr-stage svg{display:block;width:100%;height:auto}
+.flr-box{fill:#fafbf8;stroke:#9fb8aa;stroke-width:2;transition:stroke .4s,stroke-width .4s}
+.flr-t1{font:700 19px system-ui,sans-serif;fill:#fff}.flr-t2{font:700 15px system-ui,sans-serif;fill:#173e40}.flr-t3{font:12.5px system-ui,sans-serif;fill:#52736a}
+.flr-t4{font:700 11.5px system-ui,sans-serif;fill:#8a4b0f}.flr-agg{font:13px system-ui,sans-serif;fill:#cfe3d9;opacity:0;transition:opacity .4s}
+.flr-server rect:not(.flr-glow){fill:#173e40}.flr-glow{fill:none;stroke:#e09b35;stroke-width:6;opacity:0;transition:opacity .4s}
+.flr-dp{opacity:0;transition:opacity .4s}.flr-dp rect{fill:#fbefdc;stroke:#c9661c;stroke-width:1.5}
+.flr-down line,.flr-up line,.flr-p2 line{stroke-width:3;stroke-dasharray:7 6;opacity:0;transition:opacity .4s}
+.flr-down line{stroke:#2f6f5f}.flr-up line{stroke:#c9661c}.flr-p2 line{stroke:#7b4fa6;stroke-dasharray:3 5}
+.flr-lab{font:700 14px system-ui,sans-serif;opacity:0;transition:opacity .4s}.flr-lab-down{fill:#2f6f5f}.flr-lab-up{fill:#a5501a}.flr-lab-p2{fill:#6b3f96}
+.st1 .flr-down line,.st1 .flr-lab-down,.st3 .flr-up line,.st3 .flr-lab-up,.st3.p2 .flr-p2 line,.st3.p2 .flr-lab-p2{opacity:1}
+.st1 .flr-down line,.st3 .flr-up line,.st3.p2 .flr-p2 line{animation:flr-flow 1s linear infinite}
+.st2 .flr-dp{opacity:1}.st2 .flr-box{stroke:#3f7f6d;stroke-width:3.5}
+.st4 .flr-glow,.st4 .flr-agg{opacity:1}
+@keyframes flr-flow{to{stroke-dashoffset:-26}}
+.flr-cap{min-height:4.6em;margin:12px 2px 8px;font-size:16px;line-height:1.6}.flr-cap b{display:block;font-size:16.5px;color:#152e32}.flr-cap span{color:#455f5e}
+.flr-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+.flr button{font:inherit;font-size:14px;padding:7px 13px;border-radius:999px;border:1px solid #b7c9c1;background:#fafbf8;color:#152e32;cursor:pointer}
+.flr button[aria-pressed=true],.flr button.primary{background:#173e40;color:#fff;border-color:#173e40}
+.flr button:disabled{opacity:.45;cursor:default}
+.flr button:focus-visible,.flr input:focus-visible,.nz input:focus-visible{outline:3px solid #e09b35;outline-offset:3px}
+.flr-p2toggle{font-size:14px;display:inline-flex;gap:6px;align-items:center;margin-left:4px;cursor:pointer}
+.flr-p2toggle input{width:18px;height:18px;accent-color:#7b4fa6}
+.flr-fallback{margin:0;padding-left:22px}.flr-fallback li{margin:6px 0}
+.nz-label{display:block;font-weight:700;margin:4px 0}
+.nz-row{display:flex;gap:10px;align-items:center}.nz-row input{flex:1;accent-color:#173e40}.nz-row output{font-weight:750;min-width:4.5em;text-align:right}
+.nz-signals{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.nz-box h4{font-size:15px;margin:0 0 6px}
+.nz-plot{height:118px;position:relative;background:#f9fbf7;border:1px solid #d5dfd9;border-radius:8px;overflow:hidden}
+.nz-dots{position:absolute;inset:16px;display:flex;flex-wrap:wrap;gap:8px;align-content:center;justify-content:center}
+.nz-dot{width:13px;height:13px;border-radius:50%;background:#216d62}
+.rare .nz-dot{background:#c9661c;border-radius:2px;transform:rotate(45deg)}
+.nz-fog{position:absolute;inset:0;opacity:var(--nzfog,.3);pointer-events:none;background:repeating-linear-gradient(25deg,transparent 0 10px,#385c4d 11px 13px,transparent 14px 24px),repeating-linear-gradient(-25deg,transparent 0 11px,#809c88 12px 15px,transparent 16px 28px)}
+.nz-meaning{font-weight:700;margin:12px 0 4px}.nz-note{font-size:13px;color:#60766e;margin:0}
+@media (prefers-reduced-motion:reduce){.flr *{animation:none!important;transition:none!important}}
+@media (max-width:760px){.flr-cap{font-size:15px}.nz-signals{grid-template-columns:1fr}.flr button{font-size:13px;padding:6px 11px}}
