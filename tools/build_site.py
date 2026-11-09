@@ -17,7 +17,7 @@ MINOR = {'DF', 'VASC'}
 PAGE = {
     'zh': dict(
         html_lang='zh-CN', title='MedFL · 隐私保护训练中的少数类别', desc='课题 05：用公开皮肤病变图像模拟 6 个客户端的联邦学习，研究隐私保护对少数类别识别的影响。',
-        skip='跳到正文', record='最新公开记录', record_note='详细数值保存在私有研究库',
+        skip='跳到正文', toc_label='页面目录', record='最新公开记录', record_note='详细数值保存在私有研究库',
         toc=['研究什么', '数据', '公开数据联邦', '方法', '进展', '总结', '小学生版', '团队'],
         names={'MEL': '黑色素瘤', 'NV': '色素痣', 'BCC': '基底细胞癌', 'AK': '光化性角化病', 'BKL': '良性角化病', 'DF': '皮肤纤维瘤', 'VASC': '血管病变', 'SCC': '鳞状细胞癌'},
         answer='直接回答',
@@ -93,7 +93,7 @@ PAGE = {
         foot='课题 05 · 公开数据上的联邦模拟 · 没有使用医院病历'),
     'ko': dict(
         html_lang='ko', title='MedFL · 프라이버시 보호 학습과 소수 클래스', desc='과제 05: 공개 피부 병변 이미지로 클라이언트 6개의 연합학습을 모의 실험하고, 프라이버시 보호가 소수 클래스 인식에 주는 영향을 연구합니다.',
-        skip='본문으로 건너뛰기', record='최신 공개 기록', record_note='상세 수치는 비공개 연구 저장소에 보관',
+        skip='본문으로 건너뛰기', toc_label='페이지 목차', record='최신 공개 기록', record_note='상세 수치는 비공개 연구 저장소에 보관',
         toc=['무엇을 연구하나', '데이터', '공개 데이터 연합', '방법', '진행', '요약', '초등학생용', '팀'],
         names={'MEL': '흑색종', 'NV': '멜라닌세포 모반', 'BCC': '기저세포암', 'AK': '광선각화증', 'BKL': '양성 각화증', 'DF': '피부섬유종', 'VASC': '혈관 병변', 'SCC': '편평세포암'},
         answer='바로 답하면',
@@ -169,7 +169,7 @@ PAGE = {
         foot='과제 05 · 공개 데이터의 연합학습 모의 실험 · 병원 진료 기록 사용 안 함'),
     'en': dict(
         html_lang='en', title='MedFL · Minority classes under private training', desc='Project 05: a six-client federated simulation on public skin-lesion images, studying how privacy protection affects minority-class recognition.',
-        skip='Skip to content', record='Latest public record', record_note='detailed values are kept in the private research repository',
+        skip='Skip to content', toc_label='On this page', record='Latest public record', record_note='detailed values are kept in the private research repository',
         toc=['The question', 'Data', 'Public-data federation', 'Methods', 'Progress', 'Summary', 'For kids', 'Team'],
         names={'MEL': 'melanoma', 'NV': 'nevus', 'BCC': 'basal cell carcinoma', 'AK': 'actinic keratosis', 'BKL': 'benign keratosis', 'DF': 'dermatofibroma', 'VASC': 'vascular lesion', 'SCC': 'squamous cell carcinoma'},
         answer='Short answer',
@@ -284,7 +284,7 @@ def method_rows(lang, main):
         date = f'<small class="date">{m["date"]}</small>' if m['date'] else ''
         out.append(f'<tr><th scope="row">{m["name"][lang]}</th><td>{impl}</td><td>{m["hyp"][lang]}</td><td class="stc">{st}{date}</td></tr>')
     th = ''.join(f'<th scope="col">{h}</th>' for h in p['m4']['th'])
-    return f'<div class="tablewrap" tabindex="0"><p class="swipe">{p["m4"]["swipe"]}</p><table><thead><tr>{th}</tr></thead><tbody>{"".join(out)}</tbody></table></div>'
+    return f'<div class="tablewrap" tabindex="0" role="region" aria-label="{p["m4"]["table_t"] if main else p["m4"]["more_t"]}"><p class="swipe">{p["m4"]["swipe"]}</p><table><thead><tr>{th}</tr></thead><tbody>{"".join(out)}</tbody></table></div>'
 
 
 def page(lang):
@@ -322,7 +322,7 @@ def page(lang):
     sh = ''.join(f'<th scope="col">{h}</th>' for h in m2['split_head'])
     m2_body = (f'<div class="fig dataset"><div class="stats">{stats}</div><p class="io"><span>{m2["io_in"]}</span><span aria-hidden="true">→</span><span>{m2["io_out"]}</span></p></div>'
                f'<h3 class="sub-h">{m2["aux_t"]}</h3><div class="cards4">{aux}</div>'
-               + details(m2['det_t'], f'<div class="tablewrap" tabindex="0"><p class="swipe">{m4["swipe"]}</p><table><thead><tr>{sh}</tr></thead><tbody>{split}</tbody></table></div><p>{m2["ham"]}</p><p class="src"><a href="{EV["flamby"]}">{m2["src"]} ↗</a></p>'))
+               + details(m2['det_t'], f'<div class="tablewrap" tabindex="0" role="region" aria-label="{m2["det_t"]}"><p class="swipe">{m4["swipe"]}</p><table><thead><tr>{sh}</tr></thead><tbody>{split}</tbody></table></div><p>{m2["ham"]}</p><p class="src"><a href="{EV["flamby"]}">{m2["src"]} ↗</a></p>'))
 
     # M3 — public-data federation: concept cards, view A (static), view B (shared animation), concept noise slider
     cards = ''.join(f'<article class="card concept"><h3>{a}<small>{b}</small></h3><p>{c}</p></article>' for a, b, c in m3['cards'])
@@ -333,8 +333,8 @@ def page(lang):
     rt = DATA['i18n'][lang]['round']
     fallback = '<ol class="flr-fallback">' + ''.join(f'<li><b>{a}</b> {b}</li>' for a, b in zip(rt['titles'], rt['copies'])) + '</ol>'
     view_b = f'<div class="view" id="view-b" role="tabpanel" aria-labelledby="tab-b"><div class="fig"><div data-flr>{fallback}</div></div></div>'
-    tabs = (f'<div class="tabs" role="tablist"><button type="button" role="tab" id="tab-a" data-view="view-a" aria-selected="true">{m3["tabs"][0]}</button>'
-            f'<button type="button" role="tab" id="tab-b" data-view="view-b" aria-selected="false">{m3["tabs"][1]}</button></div>')
+    tabs = (f'<div class="tabs" role="tablist"><button type="button" role="tab" id="tab-a" data-view="view-a" aria-controls="view-a" aria-selected="true">{m3["tabs"][0]}</button>'
+            f'<button type="button" role="tab" id="tab-b" data-view="view-b" aria-controls="view-b" aria-selected="false">{m3["tabs"][1]}</button></div>')
     nz = DATA['i18n'][lang]['noise']
     noise = f'<h3 class="sub-h">{m3["noise_t"]}</h3><div class="fig"><div data-noise><p class="tag">{nz["tag"]}</p><p>{nz["states"][1]}</p><p class="small">{nz["note"]}</p></div></div>'
     m3_body = (f'<div class="cards3">{cards}</div>{tabs}{view_a}{view_b}{noise}'
@@ -381,7 +381,7 @@ def page(lang):
                    f'<td>{val(r, "seeds")}</td><td>{r["source_date"]}</td><td>{badge(r["status"], lang)}{badge(r["review_status"], lang)}</td></tr>' for r in DATA['results'])
     dh = ''.join(f'<th scope="col">{h}</th>' for h in m5['det_head'])
     m5_body = (board + f'<h3 class="sub-h">{m5["charts_t"]}</h3><div class="evgrid">{charts}</div><p class="small">{m5["null_note"]}</p>'
-               + details(m5['det_t'], f'<div class="tablewrap" tabindex="0"><p class="swipe">{m4["swipe"]}</p><table class="results-t"><thead><tr>{dh}</tr></thead><tbody>{rows}</tbody></table></div><p>{m5["fill"]}</p>'))
+               + details(m5['det_t'], f'<div class="tablewrap" tabindex="0" role="region" aria-label="{m5["det_t"]}"><p class="swipe">{m4["swipe"]}</p><table class="results-t"><thead><tr>{dh}</tr></thead><tbody>{rows}</tbody></table></div><p>{m5["fill"]}</p>'))
 
     # M6 — summary, next priorities, links
     nxt = ''.join(f'<li>{n["text"][lang]} {badge(n["status"], lang)}</li>' for n in DATA['next'])
@@ -390,7 +390,8 @@ def page(lang):
                f'<h3 class="sub-h">{m6["links_t"]}</h3><div class="docs">{links}</div>')
     summary = (f'<section class="mod" id="summary" aria-labelledby="summary-h">{aliases("summary")}<span class="section-num">06</span><h2 id="summary-h">{m6["q"]}</h2>{m6_body}</section>')
 
-    kids = f'<section class="mod" id="kids" aria-labelledby="kids-h"><span class="section-num">+</span><h2 id="kids-h">{p["kids_t"]}</h2><p>{p["kids_p"]}</p><div class="kids"></div></section>'
+    kids_fallback = '<ol class="kids-fallback">' + ''.join(f'<li><b>{a}</b> {b}</li>' for a, b in DATA['i18n'][lang]['kids']['steps']) + '</ol>'
+    kids = f'<section class="mod" id="kids" aria-labelledby="kids-h"><span class="section-num">+</span><h2 id="kids-h">{p["kids_t"]}</h2><p>{p["kids_p"]}</p><div class="kids">{kids_fallback}</div></section>'
     team = ''.join(f'<article class="person"><h3>{a}</h3><a class="handle" href="https://github.com/{b}">@{b}</a><p>{c}</p></article>' for a, b, c in p['team'])
     team = f'<section class="mod" id="team" aria-labelledby="team-h">{aliases("team")}<h2 id="team-h">{p["team_t"]}</h2><div class="team">{team}</div><p class="small">{p["ai"]}</p></section>'
 
@@ -400,9 +401,9 @@ def page(lang):
             f'<link rel="alternate" hreflang="ko" href="index.html"><link rel="alternate" hreflang="en" href="en.html"><link rel="alternate" hreflang="zh" href="zh.html">'
             f'<script>document.documentElement.classList.add("js")</script><style>{css}</style>'
             f'<link rel="stylesheet" href="assets/medfl.css"><link rel="stylesheet" href="assets/kids.css"></head><body>'
-            f'<a class="skip" href="#data">{p["skip"]}</a>'
+            f'<a class="skip" href="#main">{p["skip"]}</a>'
             f'<header><a class="brand" href="{FILES[lang]}">MEDFL <span>/ PROJECT 05</span></a><nav class="langs" aria-label="Language / 언어 / 语言">{langs}</nav></header>'
-            f'<div class="recordbar" role="note">{record}</div><nav class="toc" aria-label="{p["toc"][0]} …">{toc}</nav><main id="main">'
+            f'<div class="recordbar" role="note">{record}</div><nav class="toc" aria-label="{p["toc_label"]}">{toc}</nav><main id="main">'
             + hero
             + section('data', '02', m2['q'], p['answer'], m2['a'], m2_body)
             + section('public-fl', '03', m3['q'], p['answer'], m3['a'], m3_body)
@@ -415,7 +416,7 @@ def page(lang):
 
 BASE_CSS = re.search(r'<style>(.*?)</style>', (ROOT / 'versions' / 'v2-design' / 'index.html').read_text(encoding='utf-8'), re.S).group(1)
 EXTRA_CSS = (
-    '.skip{position:absolute;left:-999px}.skip:focus{left:12px;top:12px;z-index:9;background:#fff;padding:8px 12px;border-radius:6px}'
+    '@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}.skip{position:absolute;left:-999px}.skip:focus{left:12px;top:12px;z-index:9;background:#fff;padding:8px 12px;border-radius:6px}'
     'header{flex-wrap:wrap}.langs a{white-space:nowrap}'
     '.recordbar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:13px;color:#455f5e;padding:10px max(5vw,20px);border-bottom:1px solid #d5dfd9;margin:0}'
     '.rec-label b{color:#152e32}.rec-note{color:#60766e}'

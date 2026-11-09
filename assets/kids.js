@@ -1,10 +1,12 @@
 /* Kid-level animated explainer (ko / en / zh). Text comes from data/medfl-data.js; the scene is a sketch with no experimental numbers.
+   Order follows the real round: the model is copied to every box, trains there with noise (DP-SGD), and only notes go back (FedAvg).
    ?kids=5 opens step 5 directly, handy for presenters. */
 (function () {
   'use strict';
   var SVGNS = 'http://www.w3.org/2000/svg';
   var X = [70, 186, 302, 418, 534, 650];
   var COMMON = [9, 10, 8, 10, 7, 9], RARE = [1, 1, 0, 1, 0, 1];
+  var BOT = 0.6;  // robot scale
 
   function el(name, attrs, parent, text) {
     var e = document.createElementNS(SVGNS, name);
@@ -18,8 +20,22 @@
     attrs.d = 'M' + cx + ' ' + (cy - h) + 'L' + (cx + h) + ' ' + cy + 'L' + cx + ' ' + (cy + h) + 'L' + (cx - h) + ' ' + cy + 'Z';
     return el('path', attrs, parent);
   }
+  function robot(parent) {
+    el('line', { x1: 32, y1: 0, x2: 32, y2: 10, stroke: '#173e40', 'stroke-width': 3 }, parent);
+    el('circle', { 'class': 'bot-ant', cx: 32, cy: 0, r: 4, fill: '#e09b35' }, parent);
+    el('rect', { x: 12, y: 10, width: 40, height: 30, rx: 9, fill: '#5f9f8c' }, parent);
+    el('circle', { 'class': 'bot-eye', cx: 24, cy: 24, r: 4, fill: '#fff' }, parent);
+    el('circle', { 'class': 'bot-eye', cx: 40, cy: 24, r: 4, fill: '#fff' }, parent);
+    el('rect', { x: 18, y: 42, width: 28, height: 20, rx: 6, fill: '#3f7f6d' }, parent);
+  }
 
   function drawScene(svg, t) {
+    var defs = el('defs', {}, svg);
+    var grad = el('radialGradient', { id: 'kids-fog-g' }, defs);
+    el('stop', { offset: '0%', 'stop-color': '#fff', 'stop-opacity': 0.92 }, grad);
+    el('stop', { offset: '60%', 'stop-color': '#fff', 'stop-opacity': 0.55 }, grad);
+    el('stop', { offset: '100%', 'stop-color': '#fff', 'stop-opacity': 0 }, grad);
+
     var legend = el('g', { 'data-show': 's0' }, svg);
     el('rect', { x: 150, y: 22, width: 420, height: 92, rx: 14, fill: '#fff', stroke: '#9fb8aa', 'stroke-width': 2 }, legend);
     el('circle', { cx: 180, cy: 52, r: 9, fill: '#9a6a3c' }, legend);
@@ -33,7 +49,7 @@
     el('text', { x: 360, y: 62, 'text-anchor': 'middle', fill: '#fff', 'font-size': 17, 'font-weight': 700 }, server, t.server);
 
     var fence = el('g', { 'data-show': 's1' }, svg);
-    el('rect', { x: 10, y: 224, width: 700, height: 140, rx: 16, fill: 'none', stroke: '#e09b35', 'stroke-width': 3, 'stroke-dasharray': '9 7' }, fence);
+    el('rect', { 'class': 'fence', x: 10, y: 224, width: 700, height: 140, rx: 16, fill: 'none', stroke: '#e09b35', 'stroke-width': 3, 'stroke-dasharray': '9 7' }, fence);
     el('text', { x: 360, y: 214, 'text-anchor': 'middle', 'font-size': 16, 'font-weight': 700, fill: '#9a5b12' }, fence, t.stay);
 
     X.forEach(function (cx, i) {
@@ -48,22 +64,24 @@
         else el('circle', { cx: px, cy: py, r: 8, fill: '#9a6a3c' }, b);
         n++;
       }
-      var note = el('g', { 'class': 'note n' + (i % 3), style: '--dx:' + (360 - cx) + 'px;--dy:-132px' }, svg);
-      el('rect', { x: cx - 14, y: 192, width: 28, height: 36, rx: 3, fill: '#fffdf4', stroke: '#9a8a5a', 'stroke-width': 1.5 }, note);
-      for (var l = 0; l < 3; l++) el('line', { x1: cx - 8, y1: 202 + l * 8, x2: cx + 8, y2: 202 + l * 8, stroke: '#9a8a5a', 'stroke-width': 1.5 }, note);
     });
 
-    var robot = el('g', { 'class': 'robot', 'data-show': 's2 s3 s4 s5' }, svg);
-    el('line', { x1: 32, y1: 0, x2: 32, y2: 10, stroke: '#173e40', 'stroke-width': 3 }, robot);
-    el('circle', { cx: 32, cy: 0, r: 4, fill: '#e09b35' }, robot);
-    el('rect', { x: 12, y: 10, width: 40, height: 30, rx: 9, fill: '#5f9f8c' }, robot);
-    el('circle', { cx: 24, cy: 24, r: 4, fill: '#fff' }, robot);
-    el('circle', { cx: 40, cy: 24, r: 4, fill: '#fff' }, robot);
-    el('rect', { x: 18, y: 42, width: 28, height: 20, rx: 6, fill: '#3f7f6d' }, robot);
+    var fog = el('g', { 'class': 'fog', 'data-show': 's3 s4' }, svg);
+    [[60, 296, 50], [150, 268, 44], [240, 306, 52], [330, 272, 46], [420, 302, 50], [510, 268, 44], [600, 300, 52], [680, 272, 40], [200, 196, 36], [470, 200, 36]].forEach(function (p, k) {
+      el('circle', { cx: p[0], cy: p[1], r: p[2], fill: 'url(#kids-fog-g)', style: '--k:' + k }, fog);
+    });
 
-    var fog = el('g', { 'class': 'fog', 'data-show': 's4 s5' }, svg);
-    [[120, 150, 34], [220, 120, 30], [330, 150, 38], [440, 125, 30], [560, 150, 36], [660, 175, 26], [60, 185, 24], [400, 180, 26], [280, 185, 24]].forEach(function (p) {
-      el('circle', { cx: p[0], cy: p[1], r: p[2], fill: '#ffffff', opacity: 0.62 }, fog);
+    X.forEach(function (cx, i) {
+      // one robot copy per box: the server sends the same model to every box, and they all study at once
+      var tx = cx - 32 * BOT, ty = 186;
+      var bot = el('g', { 'class': 'bot', 'data-show': 's2 s3 s4 s5 s6', style: '--i:' + i + ';--tx:' + tx + 'px;--ty:' + ty + 'px;--fx:' + (360 - 32 * BOT) + 'px;--fy:36px' }, svg);
+      var inner = el('g', { 'class': 'bot-in' }, bot);
+      robot(inner);
+      var sprinkle = el('g', { 'class': 'sprinkle' }, svg);
+      [[-14, 0], [0, 6], [14, 2]].forEach(function (d, k) { el('circle', { cx: cx + d[0], cy: 236 + d[1], r: 2.4, fill: '#ffffff', stroke: '#9fb8aa', 'stroke-width': 0.8, style: '--k:' + k + ';--i:' + i }, sprinkle); });
+      var note = el('g', { 'class': 'note', style: '--i:' + i + ';--dx:' + (360 - cx) + 'px;--dy:-112px' }, svg);
+      el('rect', { x: cx - 12, y: 152, width: 24, height: 30, rx: 3, fill: '#fffdf4', stroke: '#9a8a5a', 'stroke-width': 1.5 }, note);
+      for (var l = 0; l < 3; l++) el('line', { x1: cx - 7, y1: 160 + l * 7, x2: cx + 7, y2: 160 + l * 7, stroke: '#9a8a5a', 'stroke-width': 1.4 }, note);
     });
 
     var mem = el('g', { 'data-show': 's5' }, svg);
@@ -71,18 +89,19 @@
     el('text', { x: 486, y: 36, 'font-size': 15, 'font-weight': 700, fill: '#173e40' }, mem, t.memory);
     el('circle', { cx: 494, cy: 62, r: 8, fill: '#9a6a3c' }, mem);
     el('text', { x: 510, y: 67, 'font-size': 14, fill: '#152e32' }, mem, t.commonOk);
-    diamond(494, 92, 18, { fill: '#7b4fa6', opacity: 0.3 }, mem);
+    diamond(494, 92, 18, { fill: '#7b4fa6', 'class': 'mem-rare' }, mem);
     el('text', { x: 510, y: 97, 'font-size': 14, fill: '#152e32' }, mem, t.rareLost);
     el('text', { x: 486, y: 123, 'font-size': 12, fill: '#60766e' }, mem, t.illus);
 
     var fin = el('g', { 'data-show': 's6' }, svg);
-    el('rect', { x: 150, y: 12, width: 420, height: 176, rx: 12, fill: '#fff', stroke: '#9fb8aa', 'stroke-width': 2 }, fin);
-    el('text', { x: 170, y: 42, 'font-size': 17, 'font-weight': 700, fill: '#173e40' }, fin, t.tryT);
+    el('rect', { x: 150, y: 12, width: 420, height: 168, rx: 12, fill: '#fff', stroke: '#9fb8aa', 'stroke-width': 2 }, fin);
+    el('text', { x: 170, y: 40, 'font-size': 17, 'font-weight': 700, fill: '#173e40' }, fin, t.tryT);
     t.tries.forEach(function (s, i) {
-      el('rect', { x: 170, y: 56 + i * 34, width: 380, height: 26, rx: 13, fill: '#e6f2ec', stroke: '#7fb3a3' }, fin);
-      el('text', { x: 184, y: 74 + i * 34, 'font-size': 14, fill: '#152e32' }, fin, s);
+      var chip = el('g', { 'class': 'chip', style: '--i:' + i }, fin);
+      el('rect', { x: 170, y: 52 + i * 34, width: 380, height: 26, rx: 13, fill: '#e6f2ec', stroke: '#7fb3a3' }, chip);
+      el('text', { x: 184, y: 70 + i * 34, 'font-size': 14, fill: '#152e32' }, chip, s);
     });
-    el('text', { x: 170, y: 176, 'font-size': 14, 'font-weight': 700, fill: '#8a4b0f' }, fin, t.checking);
+    el('text', { 'class': 'chip', style: '--i:3', x: 170, y: 168, 'font-size': 14, 'font-weight': 700, fill: '#8a4b0f' }, fin, t.checking);
   }
 
   function build(root) {
@@ -97,6 +116,9 @@
     var svg = el('svg', { viewBox: '0 0 720 380', 'aria-hidden': 'true', focusable: 'false' });
     stage.appendChild(svg);
     drawScene(svg, t);
+    var meter = document.createElement('div');
+    meter.className = 'kids-meter'; meter.setAttribute('aria-hidden', 'true');
+    var fill = document.createElement('span'); meter.appendChild(fill);
     var cap = document.createElement('p');
     cap.className = 'kids-caption';
     cap.setAttribute('aria-live', 'polite');
@@ -120,11 +142,13 @@
       step = Math.max(0, Math.min(N - 1, i));
       stage.className = 'kids-stage s' + step;
       stage.setAttribute('aria-label', t.stage + ' — ' + t.steps[step][1]);
+      fill.style.width = ((step + 1) / N * 100).toFixed(1) + '%';
       cap.innerHTML = '';
       var b = document.createElement('b');
       b.textContent = (step + 1) + ' / ' + N + ' · ' + t.steps[step][0];
       cap.appendChild(b);
       cap.appendChild(document.createTextNode(t.steps[step][1]));
+      cap.classList.remove('kids-in'); void cap.offsetWidth; cap.classList.add('kids-in');
       dotButtons.forEach(function (d, k) { if (k === step) d.setAttribute('aria-current', 'step'); else d.removeAttribute('aria-current'); });
       prev.disabled = step === 0;
       next.disabled = step === N - 1;
@@ -138,7 +162,10 @@
     play.addEventListener('click', function () { if (timer) stop(); else start(); });
     prev.addEventListener('click', function () { stop(); go(step - 1); });
     next.addEventListener('click', function () { stop(); go(step + 1); });
-    root.appendChild(stage); root.appendChild(cap); root.appendChild(controls);
+    root.appendChild(stage); root.appendChild(meter); root.appendChild(cap); root.appendChild(controls);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) { es.forEach(function (e) { root.classList.toggle('is-off', !e.isIntersecting); }); }).observe(stage);
+    }
     var first = parseInt(new URLSearchParams(location.search).get('kids'), 10);
     go(isNaN(first) ? 0 : first - 1);
   }

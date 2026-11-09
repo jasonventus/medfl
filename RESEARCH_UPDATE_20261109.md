@@ -38,6 +38,14 @@
 - 改版前首页保存在 `versions/v2-design/`；旧锚点（`#s0`–`#s6`、`#research-update-20261103`、`#public-explainer`、`#changes`）跳到对应新模块。切换语言时停留在当前模块。
 - 已检查：三语页面结构（模块、表格行、状态徽章、链接）一致；5 个页面在 375px 宽度下无横向溢出；无控制台错误；关闭 JavaScript 时正文可读。
 
+## 같은 날 보완 / Same-day refinement / 同日补充
+
+한국어: 4단계 애니메이션에 이동하는 파라미터·보호된 업데이트 표시, 클라이언트별 학습 진행과 DP 노이즈 표시, 서버 집계 효과를 넣었습니다. P2 통계 화살표는 1단계가 끝난 뒤 한 번만 움직이고, 4단계에 P2의 가상 특징 재학습을 표시합니다. 초등학생용 애니메이션은 실제 순서(모델 복사 → 학습 중 노이즈 → 노트만 전송)로 바꿨습니다. 이전 판은 로봇이 상자를 차례로 방문하고 노트에 나중에 안개를 뿌려, 병렬 학습과 학습 중 DP-SGD라는 설명과 맞지 않았습니다. 집계가 클라이언트 표본 수 가중 평균(Flower FedAvg)인 것은 코드로 확인했습니다.
+
+English: The four-step animation now shows travelling parameters and protected updates, per-client training progress with DP noise, and a server aggregation pulse. The P2 statistics arrow moves once, after the first stage, and step 4 shows P2’s retraining on virtual features. The kids animation now follows the real order (model copies → noise during training → only notes travel); the earlier version had one robot visiting boxes in turn and fog added to notes afterwards, which contradicted parallel training and DP-SGD during training. Aggregation weighted by client size (Flower FedAvg) was confirmed in the code.
+
+中文：四步动画加入了移动的模型参数与受保护更新、各客户端的训练进度和 DP 噪声，以及服务器聚合效果；P2 统计箭头只在第一阶段结束后移动一次，第 4 步显示 P2 用虚拟特征重训。小学生动画改为真实顺序（复制模型 → 训练中加噪 → 只传笔记）；旧版是一个机器人挨个访问箱子、事后给笔记加雾，与并行训练和“训练中做 DP-SGD”的说明不符。已在代码中确认聚合按客户端样本量加权（Flower FedAvg）。
+
 ## Sources · 근거 · 依据（研究库需协作者登录）
 
 - [Round 4 report](https://github.com/jasonventus/healthcare-ai-project05/blob/b24f91f554e6e998fb79f4af87edb4a7ca275f5e/experiments/2026-11-03_round4_all-experiments/REPORT.md)

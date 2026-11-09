@@ -883,7 +883,8 @@
     "dp2": "逐样本裁剪 + 加噪",
     "down": "↓ 模型参数",
     "up": "↑ 受保护的模型更新",
-    "stats": "↑ 加噪类别统计（仅 P2）",
+    "stats": "↑ 加噪类别统计（仅 P2，一次）",
+    "agg2": "P2：均衡虚拟特征 → 重训分类头",
     "steps": [
      "下发模型",
      "本地训练",
@@ -899,8 +900,8 @@
     "copies": [
      "发出的是模型参数，不含任何图像。",
      "每一步训练先限制每张图像的梯度贡献，再加入高斯噪声。图像始终留在本地。",
-     "上传的是用 DP-SGD 训练后的模型参数，不是图像。P2 另外一次性上传加噪的类别统计。",
-     "按各客户端样本量加权平均（FedAvg），再发回去，重复多轮。模型变了不等于更准，要用测试集评价。"
+     "上传的是用 DP-SGD 训练后的模型参数，不是图像。P2 在第一阶段训练结束后，另外一次性上传加噪的类别统计。",
+     "按各客户端样本量加权平均（FedAvg），发回去再练，重复多轮。P2 最后再用加噪统计构造均衡虚拟特征、重训分类头。效果要用测试集评价。"
     ],
     "prev": "◀ 上一步",
     "next": "下一步 ▶",
@@ -953,16 +954,16 @@
       "照片分放在 6 个箱子里（模拟 6 个来源），一张也不拿出来。"
      ],
      [
-      "小机器人去学习",
-      "小机器人（模型）挨个到箱子里看照片，学着认斑点。"
+      "机器人分身去学习",
+      "老师（服务器）把小机器人（模型）复制成 6 个，每个箱子一个，同时看照片学习。"
+     ],
+     [
+      "边学边撒雾",
+      "机器人每学一步，都撒一点“雾”（噪声），谁也看不出某一张照片在不在里面。这叫差分隐私。"
      ],
      [
       "只带回笔记",
-      "机器人只把“学习笔记”（模型参数）交给老师（服务器），老师把 6 份笔记合成一份。这叫联邦学习。"
-     ],
-     [
-      "给笔记加雾",
-      "为了保护每一张照片，笔记上会加一层“雾”（噪声），谁也看不出某一张照片在不在里面。这叫差分隐私。"
+      "机器人只把“学习笔记”（模型参数）交给老师，老师把 6 份笔记合成一份。照片一直留在箱子里。这叫联邦学习。"
      ],
      [
       "少的更容易忘",
@@ -992,7 +993,8 @@
     "dp2": "샘플별 클리핑+노이즈",
     "down": "↓ 모델 파라미터",
     "up": "↑ 보호된 모델 업데이트",
-    "stats": "↑ 노이즈 클래스 통계(P2만)",
+    "stats": "↑ 노이즈 클래스 통계(P2, 1회)",
+    "agg2": "P2: 가상 특징으로 분류기 재학습",
     "steps": [
      "모델 보내기",
      "로컬 학습",
@@ -1008,8 +1010,8 @@
     "copies": [
      "보내는 것은 모델 파라미터이며 이미지는 없습니다.",
      "학습의 매 단계에서 이미지 한 장의 그래디언트 기여를 제한한 뒤 가우스 노이즈를 더합니다. 이미지는 계속 로컬에 있습니다.",
-     "DP-SGD로 학습한 모델 파라미터를 올리며 이미지는 올리지 않습니다. P2는 노이즈를 더한 클래스 통계를 한 번 더 올립니다.",
-     "클라이언트별 표본 수로 가중 평균(FedAvg)한 뒤 다시 보내고 여러 라운드 반복합니다. 모델이 바뀌었다고 더 정확한 것은 아니며 시험 세트로 평가합니다."
+     "DP-SGD로 학습한 모델 파라미터를 올리며 이미지는 올리지 않습니다. P2는 1단계 학습이 끝난 뒤 노이즈를 더한 클래스 통계를 한 번 더 올립니다.",
+     "클라이언트별 표본 수로 가중 평균(FedAvg)해 다시 보내고 여러 라운드 반복합니다. P2는 마지막에 노이즈 통계로 균형 가상 특징을 만들어 분류기를 다시 학습합니다. 효과는 시험 세트로 평가합니다."
     ],
     "prev": "◀ 이전",
     "next": "다음 ▶",
@@ -1062,16 +1064,16 @@
       "사진은 상자 6개(서로 다른 출처 6곳을 흉내 냄)에 나뉘어 있고, 한 장도 꺼내지 않아요."
      ],
      [
-      "꼬마 로봇이 공부해요",
-      "꼬마 로봇(모델)이 상자를 차례로 찾아가 사진을 보며 점을 알아보는 법을 배워요."
+      "로봇이 나눠서 공부해요",
+      "선생님(서버)이 꼬마 로봇(모델)을 6개로 복사해 상자마다 하나씩 보내고, 로봇들이 동시에 사진을 보며 공부해요."
+     ],
+     [
+      "공부하며 안개 뿌리기",
+      "로봇은 한 걸음 배울 때마다 ‘안개’(노이즈)를 조금 뿌려요. 어떤 사진이 들어 있었는지 아무도 알 수 없어요. 이것이 차등 프라이버시예요."
      ],
      [
       "공부 노트만 가져와요",
-      "로봇은 ‘공부 노트’(모델 파라미터)만 선생님(서버)에게 주고, 선생님은 노트 6개를 하나로 합쳐요. 이것이 연합학습이에요."
-     ],
-     [
-      "노트에 안개 뿌리기",
-      "사진 한 장 한 장을 지키려고 노트에 ‘안개’(노이즈)를 뿌려요. 어떤 사진이 들어 있었는지 아무도 알 수 없어요. 이것이 차등 프라이버시예요."
+      "로봇은 ‘공부 노트’(모델 파라미터)만 선생님에게 주고, 선생님은 노트 6개를 하나로 합쳐요. 사진은 계속 상자 안에 있어요. 이것이 연합학습이에요."
      ],
      [
       "적은 것은 잘 잊어요",
@@ -1101,7 +1103,8 @@
     "dp2": "per-sample clip+noise",
     "down": "↓ Model parameters",
     "up": "↑ Protected model update",
-    "stats": "↑ Noisy class stats (P2)",
+    "stats": "↑ Noisy class stats (P2, once)",
+    "agg2": "P2: retrain on virtual features",
     "steps": [
      "Send model",
      "Train locally",
@@ -1117,8 +1120,8 @@
     "copies": [
      "What travels is model parameters, never images.",
      "At every training step, each image’s gradient contribution is capped, then Gaussian noise is added. The images never leave the client.",
-     "Clients upload the parameters trained with DP-SGD, not images. P2 also uploads noisy class statistics once.",
-     "Updates are averaged by client size (FedAvg), sent back, and the round repeats. A changed model is not automatically more accurate; the test set decides."
+     "Clients upload the parameters trained with DP-SGD, not images. After the first stage, P2 also uploads noisy class statistics once.",
+     "Updates are averaged by client size (FedAvg), sent back, and the round repeats. At the end, P2 builds balanced virtual features from the noisy statistics and retrains the head. The test set decides whether it helped."
     ],
     "prev": "◀ Back",
     "next": "Next ▶",
@@ -1150,9 +1153,9 @@
      "● Common spots: lots of photos",
      "◆ Rare spots: only a few photos"
     ],
-    "memory": "Robot’s memory",
-    "commonOk": "Common spots: remembered ✓",
-    "rareLost": "Rare spots: easily forgotten ✗",
+    "memory": "Robots’ memory",
+    "commonOk": "Common: remembered ✓",
+    "rareLost": "Rare: easily forgotten ✗",
     "illus": "A sketch, not real numbers",
     "tryT": "Ideas we are testing",
     "tries": [
@@ -1171,16 +1174,16 @@
       "The photos sit in 6 boxes (standing in for 6 sources). Not one photo is taken out."
      ],
      [
-      "A little robot studies",
-      "A little robot (the model) visits the boxes one by one and learns from the photos."
+      "Robot copies study",
+      "The teacher (server) copies the little robot (the model) six times, one per box, and all six study their photos at the same time."
+     ],
+     [
+      "Fog while studying",
+      "At every study step the robots sprinkle a little fog (noise), so nobody can tell whether one photo was used. This is differential privacy."
      ],
      [
       "Only notes travel",
-      "The robot hands only its study notes (model parameters) to the teacher (server), who merges the 6 notes into one. This is federated learning."
-     ],
-     [
-      "Fog on the notes",
-      "To protect every single photo, the notes get a layer of fog (noise), so nobody can tell whether one photo was used. This is differential privacy."
+      "The robots hand only their study notes (model parameters) to the teacher, who merges the six notes into one. The photos never leave the boxes. This is federated learning."
      ],
      [
       "Few photos fade first",
@@ -1188,7 +1191,7 @@
      ],
      [
       "Looking for fixes",
-      "We tried several ideas to help the robot remember rare spots. So far the gains are small, and teammates are still checking."
+      "We tried several ideas to help the robots remember rare spots. So far the gains are small, and teammates are still checking."
      ]
     ],
     "prev": "◀ Back",

@@ -194,10 +194,10 @@ DATA['i18n'] = {
         'round': {
             'aria': '一轮联邦训练示意：6 个客户端与服务器', 'server': '服务器', 'agg': '加权平均 → 下一轮模型', 'client': '客户端',
             'local': '图像留在本地', 'dp1': 'DP-SGD', 'dp2': '逐样本裁剪 + 加噪',
-            'down': '↓ 模型参数', 'up': '↑ 受保护的模型更新', 'stats': '↑ 加噪类别统计（仅 P2）',
+            'down': '↓ 模型参数', 'up': '↑ 受保护的模型更新', 'stats': '↑ 加噪类别统计（仅 P2，一次）', 'agg2': 'P2：均衡虚拟特征 → 重训分类头',
             'steps': ['下发模型', '本地训练', '上传更新', '服务器聚合'],
             'titles': ['服务器把当前模型发给 6 个客户端', '各客户端在本地训练：DP-SGD 逐样本梯度裁剪 + 加噪', '只上传受保护的模型更新', '服务器加权平均，得到下一轮模型'],
-            'copies': ['发出的是模型参数，不含任何图像。', '每一步训练先限制每张图像的梯度贡献，再加入高斯噪声。图像始终留在本地。', '上传的是用 DP-SGD 训练后的模型参数，不是图像。P2 另外一次性上传加噪的类别统计。', '按各客户端样本量加权平均（FedAvg），再发回去，重复多轮。模型变了不等于更准，要用测试集评价。'],
+            'copies': ['发出的是模型参数，不含任何图像。', '每一步训练先限制每张图像的梯度贡献，再加入高斯噪声。图像始终留在本地。', '上传的是用 DP-SGD 训练后的模型参数，不是图像。P2 在第一阶段训练结束后，另外一次性上传加噪的类别统计。', '按各客户端样本量加权平均（FedAvg），发回去再练，重复多轮。P2 最后再用加噪统计构造均衡虚拟特征、重训分类头。效果要用测试集评价。'],
             'prev': '◀ 上一步', 'next': '下一步 ▶', 'play': '▶ 自动播放', 'pause': '❚❚ 暂停', 'p2': '显示 P2 额外上传的类别统计', 'tag': '流程示意 · 不是实验结果'},
         'noise': {
             'tag': '概念示意强度（非真实 ε 或准确率数值）', 'label': '调节示意噪声强度', 'low': '低', 'high': '高', 'unit': '示意强度',
@@ -211,9 +211,9 @@ DATA['i18n'] = {
             'steps': [
                 ['这是什么？', '电脑要学会认 8 种皮肤斑点。有的斑点照片很多（棕色圆点），有的很少（紫色菱形）。'],
                 ['照片不出门', '照片分放在 6 个箱子里（模拟 6 个来源），一张也不拿出来。'],
-                ['小机器人去学习', '小机器人（模型）挨个到箱子里看照片，学着认斑点。'],
-                ['只带回笔记', '机器人只把“学习笔记”（模型参数）交给老师（服务器），老师把 6 份笔记合成一份。这叫联邦学习。'],
-                ['给笔记加雾', '为了保护每一张照片，笔记上会加一层“雾”（噪声），谁也看不出某一张照片在不在里面。这叫差分隐私。'],
+                ['机器人分身去学习', '老师（服务器）把小机器人（模型）复制成 6 个，每个箱子一个，同时看照片学习。'],
+                ['边学边撒雾', '机器人每学一步，都撒一点“雾”（噪声），谁也看不出某一张照片在不在里面。这叫差分隐私。'],
+                ['只带回笔记', '机器人只把“学习笔记”（模型参数）交给老师，老师把 6 份笔记合成一份。照片一直留在箱子里。这叫联邦学习。'],
                 ['少的更容易忘', '雾一样大，照片少的斑点更容易被忘掉。这是实验里看到的现象，图是示意。'],
                 ['我们在想办法', '我们试了几种办法，让少见的斑点也被记住。目前只有小的改善，结果还在等同学检查。']],
             'prev': '◀ 上一步', 'next': '下一步 ▶', 'play': '▶ 播放', 'pause': '❚❚ 暂停', 'stepOf': '第', 'stage': '给小学生看的联邦学习与差分隐私示意图'},
@@ -222,10 +222,10 @@ DATA['i18n'] = {
         'round': {
             'aria': '연합학습 한 라운드: 클라이언트 6개와 서버', 'server': '서버', 'agg': '가중 평균 → 다음 라운드 모델', 'client': '클라이언트',
             'local': '이미지는 로컬에', 'dp1': 'DP-SGD', 'dp2': '샘플별 클리핑+노이즈',
-            'down': '↓ 모델 파라미터', 'up': '↑ 보호된 모델 업데이트', 'stats': '↑ 노이즈 클래스 통계(P2만)',
+            'down': '↓ 모델 파라미터', 'up': '↑ 보호된 모델 업데이트', 'stats': '↑ 노이즈 클래스 통계(P2, 1회)', 'agg2': 'P2: 가상 특징으로 분류기 재학습',
             'steps': ['모델 보내기', '로컬 학습', '업데이트 올리기', '서버 집계'],
             'titles': ['서버가 현재 모델을 클라이언트 6개에 보냅니다', '각 클라이언트가 로컬에서 학습: DP-SGD 샘플별 그래디언트 클리핑 + 노이즈', '보호된 모델 업데이트만 올립니다', '서버가 가중 평균해 다음 라운드 모델을 만듭니다'],
-            'copies': ['보내는 것은 모델 파라미터이며 이미지는 없습니다.', '학습의 매 단계에서 이미지 한 장의 그래디언트 기여를 제한한 뒤 가우스 노이즈를 더합니다. 이미지는 계속 로컬에 있습니다.', 'DP-SGD로 학습한 모델 파라미터를 올리며 이미지는 올리지 않습니다. P2는 노이즈를 더한 클래스 통계를 한 번 더 올립니다.', '클라이언트별 표본 수로 가중 평균(FedAvg)한 뒤 다시 보내고 여러 라운드 반복합니다. 모델이 바뀌었다고 더 정확한 것은 아니며 시험 세트로 평가합니다.'],
+            'copies': ['보내는 것은 모델 파라미터이며 이미지는 없습니다.', '학습의 매 단계에서 이미지 한 장의 그래디언트 기여를 제한한 뒤 가우스 노이즈를 더합니다. 이미지는 계속 로컬에 있습니다.', 'DP-SGD로 학습한 모델 파라미터를 올리며 이미지는 올리지 않습니다. P2는 1단계 학습이 끝난 뒤 노이즈를 더한 클래스 통계를 한 번 더 올립니다.', '클라이언트별 표본 수로 가중 평균(FedAvg)해 다시 보내고 여러 라운드 반복합니다. P2는 마지막에 노이즈 통계로 균형 가상 특징을 만들어 분류기를 다시 학습합니다. 효과는 시험 세트로 평가합니다.'],
             'prev': '◀ 이전', 'next': '다음 ▶', 'play': '▶ 자동 재생', 'pause': '❚❚ 멈춤', 'p2': 'P2가 추가로 올리는 클래스 통계 보기', 'tag': '흐름 설명 · 실험 결과 아님'},
         'noise': {
             'tag': '개념 설명용 강도 (실제 ε나 정확도 값이 아님)', 'label': '설명용 노이즈 강도 조절', 'low': '낮음', 'high': '높음', 'unit': '설명용 강도',
@@ -239,9 +239,9 @@ DATA['i18n'] = {
             'steps': [
                 ['무엇을 하나요?', '컴퓨터가 피부 점 8종류를 알아보도록 가르쳐요. 어떤 점은 사진이 많고(갈색 동그라미), 어떤 점은 적어요(보라색 마름모).'],
                 ['사진은 밖으로 안 나가요', '사진은 상자 6개(서로 다른 출처 6곳을 흉내 냄)에 나뉘어 있고, 한 장도 꺼내지 않아요.'],
-                ['꼬마 로봇이 공부해요', '꼬마 로봇(모델)이 상자를 차례로 찾아가 사진을 보며 점을 알아보는 법을 배워요.'],
-                ['공부 노트만 가져와요', '로봇은 ‘공부 노트’(모델 파라미터)만 선생님(서버)에게 주고, 선생님은 노트 6개를 하나로 합쳐요. 이것이 연합학습이에요.'],
-                ['노트에 안개 뿌리기', '사진 한 장 한 장을 지키려고 노트에 ‘안개’(노이즈)를 뿌려요. 어떤 사진이 들어 있었는지 아무도 알 수 없어요. 이것이 차등 프라이버시예요.'],
+                ['로봇이 나눠서 공부해요', '선생님(서버)이 꼬마 로봇(모델)을 6개로 복사해 상자마다 하나씩 보내고, 로봇들이 동시에 사진을 보며 공부해요.'],
+                ['공부하며 안개 뿌리기', '로봇은 한 걸음 배울 때마다 ‘안개’(노이즈)를 조금 뿌려요. 어떤 사진이 들어 있었는지 아무도 알 수 없어요. 이것이 차등 프라이버시예요.'],
+                ['공부 노트만 가져와요', '로봇은 ‘공부 노트’(모델 파라미터)만 선생님에게 주고, 선생님은 노트 6개를 하나로 합쳐요. 사진은 계속 상자 안에 있어요. 이것이 연합학습이에요.'],
                 ['적은 것은 잘 잊어요', '안개가 같아도 사진이 적은 점은 더 쉽게 잊혀요. 실험에서 본 현상이고, 그림은 설명용이에요.'],
                 ['방법을 찾고 있어요', '드문 점도 기억하도록 여러 방법을 시험했어요. 아직 조금 나아진 정도이고, 결과는 친구들이 확인하고 있어요.']],
             'prev': '◀ 이전', 'next': '다음 ▶', 'play': '▶ 재생', 'pause': '❚❚ 멈춤', 'stepOf': '단계', 'stage': '초등학생을 위한 연합학습과 차등 프라이버시 그림'},
@@ -250,10 +250,10 @@ DATA['i18n'] = {
         'round': {
             'aria': 'One federated round: six clients and a server', 'server': 'Server', 'agg': 'Weighted average → next model', 'client': 'Client',
             'local': 'Images stay local', 'dp1': 'DP-SGD', 'dp2': 'per-sample clip+noise',
-            'down': '↓ Model parameters', 'up': '↑ Protected model update', 'stats': '↑ Noisy class stats (P2)',
+            'down': '↓ Model parameters', 'up': '↑ Protected model update', 'stats': '↑ Noisy class stats (P2, once)', 'agg2': 'P2: retrain on virtual features',
             'steps': ['Send model', 'Train locally', 'Upload update', 'Aggregate'],
             'titles': ['The server sends the current model to six clients', 'Each client trains locally: DP-SGD per-sample gradient clipping + noise', 'Only the protected model update goes up', 'The server averages the updates into the next model'],
-            'copies': ['What travels is model parameters, never images.', 'At every training step, each image’s gradient contribution is capped, then Gaussian noise is added. The images never leave the client.', 'Clients upload the parameters trained with DP-SGD, not images. P2 also uploads noisy class statistics once.', 'Updates are averaged by client size (FedAvg), sent back, and the round repeats. A changed model is not automatically more accurate; the test set decides.'],
+            'copies': ['What travels is model parameters, never images.', 'At every training step, each image’s gradient contribution is capped, then Gaussian noise is added. The images never leave the client.', 'Clients upload the parameters trained with DP-SGD, not images. After the first stage, P2 also uploads noisy class statistics once.', 'Updates are averaged by client size (FedAvg), sent back, and the round repeats. At the end, P2 builds balanced virtual features from the noisy statistics and retrains the head. The test set decides whether it helped.'],
             'prev': '◀ Back', 'next': 'Next ▶', 'play': '▶ Autoplay', 'pause': '❚❚ Pause', 'p2': 'Show the class statistics P2 also uploads', 'tag': 'Flow illustration · not results'},
         'noise': {
             'tag': 'Concept intensity (not a real ε or accuracy value)', 'label': 'Illustrative noise intensity', 'low': 'Low', 'high': 'High', 'unit': 'Illustrative intensity',
@@ -262,16 +262,16 @@ DATA['i18n'] = {
             'note': 'The slider only changes a visual overlay; it runs no DP and maps to no real ε or accuracy.'},
         'kids': {
             'server': 'Teacher (server)', 'box': 'Box', 'stay': 'Photos stay in the boxes', 'legend': ['● Common spots: lots of photos', '◆ Rare spots: only a few photos'],
-            'memory': 'Robot’s memory', 'commonOk': 'Common spots: remembered ✓', 'rareLost': 'Rare spots: easily forgotten ✗', 'illus': 'A sketch, not real numbers',
+            'memory': 'Robots’ memory', 'commonOk': 'Common: remembered ✓', 'rareLost': 'Rare: easily forgotten ✗', 'illus': 'A sketch, not real numbers',
             'tryT': 'Ideas we are testing', 'tries': ['P2: share protected class summaries', 'P2-PCA: shrink first, then share', 'P2-LA: fix answers using counts'], 'checking': '◐ Teammates are still checking the results',
             'steps': [
                 ['What is this?', 'We teach a computer to tell 8 kinds of skin spots apart. Some spots have lots of photos (brown dots); some have very few (purple diamonds).'],
                 ['Photos stay put', 'The photos sit in 6 boxes (standing in for 6 sources). Not one photo is taken out.'],
-                ['A little robot studies', 'A little robot (the model) visits the boxes one by one and learns from the photos.'],
-                ['Only notes travel', 'The robot hands only its study notes (model parameters) to the teacher (server), who merges the 6 notes into one. This is federated learning.'],
-                ['Fog on the notes', 'To protect every single photo, the notes get a layer of fog (noise), so nobody can tell whether one photo was used. This is differential privacy.'],
+                ['Robot copies study', 'The teacher (server) copies the little robot (the model) six times, one per box, and all six study their photos at the same time.'],
+                ['Fog while studying', 'At every study step the robots sprinkle a little fog (noise), so nobody can tell whether one photo was used. This is differential privacy.'],
+                ['Only notes travel', 'The robots hand only their study notes (model parameters) to the teacher, who merges the six notes into one. The photos never leave the boxes. This is federated learning.'],
                 ['Few photos fade first', 'With the same fog, spots with few photos are forgotten more easily. We saw this in the experiments; the picture is a sketch.'],
-                ['Looking for fixes', 'We tried several ideas to help the robot remember rare spots. So far the gains are small, and teammates are still checking.']],
+                ['Looking for fixes', 'We tried several ideas to help the robots remember rare spots. So far the gains are small, and teammates are still checking.']],
             'prev': '◀ Back', 'next': 'Next ▶', 'play': '▶ Play', 'pause': '❚❚ Pause', 'stepOf': 'Step', 'stage': 'Kid-friendly picture of federated learning and differential privacy'},
     },
 }
