@@ -46,6 +46,14 @@ English: The four-step animation now shows travelling parameters and protected u
 
 中文：四步动画加入了移动的模型参数与受保护更新、各客户端的训练进度和 DP 噪声，以及服务器聚合效果；P2 统计箭头只在第一阶段结束后移动一次，第 4 步显示 P2 用虚拟特征重训。小学生动画改为真实顺序（复制模型 → 训练中加噪 → 只传笔记）；旧版是一个机器人挨个访问箱子、事后给笔记加雾，与并行训练和“训练中做 DP-SGD”的说明不符。已在代码中确认聚合按客户端样本量加权（Flower FedAvg）。
 
+## 결과 공개 / Results published / 结果公开
+
+한국어: 프로젝트 책임자의 결정으로 실험 결과를 공개했습니다. 12개 방법의 균형 정확도·Macro-F1·DF·VASC 재현율(시드 3개 평균±표준편차)과 실제 ε를 `tools/results_data.py`에 옮기고, 그래프 두 개(B2 대 B3 클래스별 재현율, 소수 클래스 재현율 대 균형 정확도·Macro-F1)와 전체 표를 그렸습니다. 멤버십 추론, 흉부 영상 10개 설정, PathMNIST 과목 설정 결과도 관찰 항목에 넣었습니다. 항목별 ‘검토 대기’ 표시는 없앴고 데이터 파일의 review_status는 not_required입니다. 흉부 영상은 K=10을 포함한 10개 설정이 이미 끝났으므로 ‘K=10 시작 전’을 지웠습니다. 초등학생용 애니메이션은 ‘애니메이션 설명’으로 이름을 바꿨습니다.
+
+English: Results are published by decision of the project lead. Balanced accuracy, macro-F1, DF and VASC recall (mean ± SD over 3 seeds) and actual ε for all 12 setups are copied into `tools/results_data.py` and drawn as two charts (per-class recall B2 vs B3; minority recall vs balanced accuracy and macro-F1) plus a full table. Membership inference, the 10 chest settings and the PathMNIST course setting are listed among the observations. Per-item “Pending review” badges were removed; review_status is not_required in the data file. The chest study already covers 10 settings including K=10, so “K=10 not started” was removed. The kids animation is renamed “Animated explainer”.
+
+中文：按项目负责人的决定公开实验结果。12 种方案的平衡准确率、Macro-F1、DF 和 VASC 召回率（3 个种子的均值±标准差）及实际 ε 写入 `tools/results_data.py`，画成两张图（B2 与 B3 各类别召回率；少数类别召回率与平衡准确率、Macro-F1）和完整表格。成员推断攻击、胸片 10 种设置、PathMNIST 课程设置的结果写入“当前观察”。去掉了逐项的“待复核”标记，数据文件中 review_status 记为 not_required。胸片已完成含 K=10 在内的 10 种设置，因此删去“K=10 尚未开展”。“给小学生的动画”改名为“动画说明”。
+
 ## Sources · 근거 · 依据（研究库需协作者登录）
 
 - [Round 4 report](https://github.com/jasonventus/healthcare-ai-project05/blob/b24f91f554e6e998fb79f4af87edb4a7ca275f5e/experiments/2026-11-03_round4_all-experiments/REPORT.md)

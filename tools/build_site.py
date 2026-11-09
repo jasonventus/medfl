@@ -9,6 +9,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
 from site_content import DATA, EV  # noqa: E402
+from results_data import PER_CLASS, METHODS, EPS  # noqa: E402
 
 FILES = {'ko': 'index.html', 'en': 'en.html', 'zh': 'zh.html'}
 CLASSES = ['MEL', 'NV', 'BCC', 'AK', 'BKL', 'DF', 'VASC', 'SCC']
@@ -17,16 +18,16 @@ MINOR = {'DF', 'VASC'}
 PAGE = {
     'zh': dict(
         html_lang='zh-CN', title='MedFL · 隐私保护训练中的少数类别', desc='课题 05：用公开皮肤病变图像模拟 6 个客户端的联邦学习，研究隐私保护对少数类别识别的影响。',
-        skip='跳到正文', toc_label='页面目录', record='最新公开记录', record_note='详细数值保存在私有研究库',
-        toc=['研究什么', '数据', '公开数据联邦', '方法', '进展', '总结', '小学生版', '团队'],
+        skip='跳到正文', toc_label='页面目录', record='最新公开记录', record_note='数值为 3 个种子的均值±标准差，来自实验汇总文件',
+        toc=['研究什么', '数据', '公开数据联邦', '方法', '进展', '总结', '动画说明', '团队'],
         names={'MEL': '黑色素瘤', 'NV': '色素痣', 'BCC': '基底细胞癌', 'AK': '光化性角化病', 'BKL': '良性角化病', 'DF': '皮肤纤维瘤', 'VASC': '血管病变', 'SCC': '鳞状细胞癌'},
         answer='直接回答',
         m1=dict(eyebrow='课题 05 · 公开皮肤病变图像 · 隐私保护训练',
                 h1='保护隐私时，样本少的皮肤病变类别会不会更容易被漏识别？',
                 sub='我们用公开皮肤病变图像，在六个客户端中开展联邦学习模拟，研究隐私保护对少数类别*识别的影响，并比较缓解这种影响的方法。',
                 note='* 少数类别：当前训练划分中样本占比较低的类别，本研究看皮肤纤维瘤（DF）和血管病变（VASC）；不等于临床罕见病。',
-                a='目前的观察是：会。加入隐私保护后，皮肤纤维瘤和血管病变比常见的色素痣下降得多；试过的缓解办法还没有稳定改善。结果待复核。',
-                b1='3 分钟看懂研究', b2='查看实验进展', repo='成员协作仓库', kids='小学生版动画',
+                a='会。加隐私保护后，皮肤纤维瘤和血管病变的召回率平均降 64.2 个百分点，色素痣只降 0.3。最好的缓解办法 P2-LA 平衡准确率 31.1%，不加隐私的联邦训练为 61.1%。',
+                b1='3 分钟看懂研究', b2='查看实验进展', repo='成员协作仓库', kids='动画说明',
                 fig_img='皮肤病变图像', fig_img_note='示意图标，非真实病例', fig_model='模型', fig_model_note='提取图像特征 → 分类',
                 fig_out='8 类预测概率', fig_minor='少数类别', fig_focus='关注：少数类别有没有被找回', fig_focus_note='召回率 = 这一类图像中被正确找回的比例',
                 fig_cap='一张图进去，8 个类别各得一个概率；我们看少数类别的召回率。',
@@ -74,17 +75,17 @@ PAGE = {
                        ('P2-LA', '不发布特征和，也不重训分类头；用 DP 类别计数校正预测分数（Logit Adjustment）。', '观察：有限改善。')],
                 table_t='核心方法表', th=['方法名称', '具体实现', '检验假设', '当前状态'], swipe='← 左右滑动查看 →',
                 more_t='展开其余方法：B0、B1、B4、B5、P1-block、P1-LoRA、P2-PCA、P2-LA', vlab=['本轮：', '原设计：']),
-        m5=dict(q='我们做到了哪一步，发现了什么？', a='对照、改进和扩展实验都已提交，待其他成员复核。目前只有 P2-LA 有有限改善，没有方法稳定解决少数类别的损失。',
-                cols=['已提交工作', '当前观察', '下一步验证'], ev='证据', charts_t='两张结果图表',
+        m5=dict(q='我们做到了哪一步，发现了什么？', a='12 种方案各跑 3 个种子。加隐私的 10 种方案里最高的是 P2-LA（平衡准确率 31.1%），不加隐私的联邦训练为 61.1%、集中训练为 73.9%；少数类别的损失没有补回。',
+                cols=['已提交工作', '当前观察', '下一步验证'], ev='证据', charts_t='结果图', axis1='召回率（%）', axis2='%', n='测试 {n} 张', ref='不加 DP · 参照', epsl='实际 ε={e}', l1=['B2 普通联邦（不加 DP）', 'B3 全量 DP 联邦（实际 ε=2.9988，δ=10⁻⁵）'], l2=['少数类别召回（DF、VASC 均值）', '平衡准确率', 'Macro-F1'], note='数值为百分比：3 个种子的均值±标准差，每个种子测试 4,650 张。实际 ε 取各客户端中的最大值，δ=10⁻⁵；B2 不加 DP。', src='来源：runs_fedisic/round4_isic_summary/main.csv、round3_summary/per_class_dp_cost.csv（私有研究库 src/），由 tools/results_data.py 写入。',
                 pending='数值待公开', null='待补充', fields=['实际 ε', 'δ', '随机种子数', '复核状态', '包含方法'], nodp='不加 DP（无 ε）', priv='私有库，需协作者登录',
                 null_note='详细数值目前只在私有研究库；数据文件里对应字段为 null，页面显示“待补充”。',
-                fill='公开数值时，只在 tools/site_content.py 的 results 里填写，再运行 python tools/build_site.py，三语页面和数据文件一起更新。', det_t='技术细节：结果对象（data/medfl-data.json）', det_head=['experiment_id', '数据划分', '实际 ε', 'δ', '种子', '日期', '状态']),
+                fill='公开数值时，只在 tools/site_content.py 的 results 里填写，再运行 python tools/build_site.py，三语页面和数据文件一起更新。', det_t='技术细节：12 种方案的完整结果', det_head=['方法', '平衡准确率', 'Macro-F1', 'DF', 'VASC', '少数类均值', '实际 ε']),
         m6=dict(q='总结与下一步',
                 sum=['我们研究的是隐私保护训练对样本少的皮肤病变类别的影响。', '我们用公开数据和六客户端联邦模拟，比较实际训练方案与改进尝试。', '实验已经开展，部分观察和修正结果已提交，稳定改善仍需进一步验证。'],
                 next_t='下一步重点', links_t='资料与历史版本',
                 links=[('explain.html?lang=zh', '公众互动讲解（四步动画、噪声滑块、P1/P2）'), ('progress.html?lang=zh', '研究进展页'), ('versions/v2-design/zh.html', '改版前的首页（研究设计 v2，11-03）'),
                        ('versions/v1/zh.html', '最初网站 v1'), ('https://github.com/jasonventus/medfl', '网站源码（GitHub）')]),
-        kids_t='附：给小学生的 1 分钟动画', kids_p='七个画面讲完我们在做什么。图是示意，不含实验数字。',
+        kids_t='动画说明：7 个画面看懂整个流程', kids_p='用比喻讲完整个流程：照片不出箱子，模型分身学习，学习时加噪，只把笔记交回。图是示意，不含实验数字。',
         team_t='团队', ai='AI 工具（Codex、Claude、Gemini）协助了实验、写作和网页制作；结论由成员负责，并接受复核。',
         team=[('范润堃', 'fanrunkun1', '项目负责人。指挥 AI 工具（Codex、Claude、Gemini）完成数据整理、实验、分析、可视化以及论文初稿和修改。'),
               ('金銀潔 김은결 (Kim eungyeul)', 'kimeg02', '撰写了本研究依据的实验设计书；小组计划中负责背景、文献和韩语沟通。'),
@@ -93,16 +94,16 @@ PAGE = {
         foot='课题 05 · 公开数据上的联邦模拟 · 没有使用医院病历'),
     'ko': dict(
         html_lang='ko', title='MedFL · 프라이버시 보호 학습과 소수 클래스', desc='과제 05: 공개 피부 병변 이미지로 클라이언트 6개의 연합학습을 모의 실험하고, 프라이버시 보호가 소수 클래스 인식에 주는 영향을 연구합니다.',
-        skip='본문으로 건너뛰기', toc_label='페이지 목차', record='최신 공개 기록', record_note='상세 수치는 비공개 연구 저장소에 보관',
-        toc=['무엇을 연구하나', '데이터', '공개 데이터 연합', '방법', '진행', '요약', '초등학생용', '팀'],
+        skip='본문으로 건너뛰기', toc_label='페이지 목차', record='최신 공개 기록', record_note='수치는 시드 3개의 평균±표준편차, 실험 요약 파일 기준',
+        toc=['무엇을 연구하나', '데이터', '공개 데이터 연합', '방법', '진행', '요약', '애니메이션 설명', '팀'],
         names={'MEL': '흑색종', 'NV': '멜라닌세포 모반', 'BCC': '기저세포암', 'AK': '광선각화증', 'BKL': '양성 각화증', 'DF': '피부섬유종', 'VASC': '혈관 병변', 'SCC': '편평세포암'},
         answer='바로 답하면',
         m1=dict(eyebrow='과제 05 · 공개 피부 병변 이미지 · 프라이버시 보호 학습',
                 h1='프라이버시를 보호하면, 표본이 적은 피부 병변은 더 쉽게 놓칠까요?',
                 sub='공개 피부 병변 이미지로 클라이언트 6개의 연합학습을 모의 실험해, 프라이버시 보호가 소수 클래스* 인식에 주는 영향을 연구하고 이를 줄이는 방법을 비교합니다.',
                 note='* 소수 클래스: 현재 학습 분할에서 표본 비율이 낮은 클래스. 이 연구는 피부섬유종(DF)과 혈관 병변(VASC)을 보며, 임상적 희귀 질환과 같지 않습니다.',
-                a='지금까지의 관찰로는 그렇습니다. 프라이버시 보호를 넣으면 피부섬유종과 혈관 병변이 흔한 멜라닌세포 모반보다 크게 떨어지고, 시험한 완화 방법은 아직 안정적으로 개선하지 못했습니다. 결과는 검토 대기입니다.',
-                b1='3분 만에 연구 이해하기', b2='실험 진행 보기', repo='구성원 협업 저장소', kids='초등학생용 애니메이션',
+                a='그렇습니다. 프라이버시 보호를 넣으면 피부섬유종과 혈관 병변의 재현율이 평균 64.2%p 떨어지고, 흔한 멜라닌세포 모반은 0.3%p만 떨어집니다. 시험한 완화 방법 중 가장 나은 P2-LA의 균형 정확도는 31.1%로, 프라이버시 없는 연합학습(61.1%)에 못 미칩니다.',
+                b1='3분 만에 연구 이해하기', b2='실험 진행 보기', repo='구성원 협업 저장소', kids='애니메이션 설명',
                 fig_img='피부 병변 이미지', fig_img_note='설명용 아이콘, 실제 증례 아님', fig_model='모델', fig_model_note='이미지 특징 추출 → 분류',
                 fig_out='8개 클래스 예측 확률', fig_minor='소수 클래스', fig_focus='중점: 소수 클래스를 찾아냈는가', fig_focus_note='재현율 = 그 클래스 이미지 중 올바르게 찾아낸 비율',
                 fig_cap='이미지 한 장이 들어가면 8개 클래스마다 확률이 나오고, 우리는 소수 클래스의 재현율을 봅니다.',
@@ -150,17 +151,17 @@ PAGE = {
                        ('P2-LA', '특징 합을 공개하지 않고 분류기도 다시 학습하지 않습니다. DP 클래스 개수로 예측 점수를 보정합니다(Logit Adjustment).', '관찰: 제한적 개선.')],
                 table_t='핵심 방법 표', th=['방법', '구체적 구현', '검증 가설', '현재 상태'], swipe='← 좌우로 밀어 보기 →',
                 more_t='나머지 방법 펼치기: B0·B1·B4·B5·P1-block·P1-LoRA·P2-PCA·P2-LA', vlab=['이번: ', '원 설계: ']),
-        m5=dict(q='어디까지 했고, 무엇을 발견했나요?', a='대조·개선·확장 실험을 모두 제출했고 다른 구성원의 검토를 기다립니다. 지금은 P2-LA만 제한적으로 개선했고, 소수 클래스 손실을 안정적으로 해결한 방법은 없습니다.',
-                cols=['제출한 작업', '현재 관찰', '다음 검증'], ev='근거', charts_t='결과 그래프 두 개',
+        m5=dict(q='어디까지 했고, 무엇을 발견했나요?', a='12개 방법을 시드 3개씩 실행했습니다. 프라이버시를 적용한 10개 중 균형 정확도가 가장 높은 것은 P2-LA(31.1%)이고, 프라이버시 없는 연합학습은 61.1%, 중앙 학습은 73.9%입니다. 소수 클래스 손실은 안정적으로 회복되지 않았습니다.',
+                cols=['제출한 작업', '현재 관찰', '다음 검증'], ev='근거', charts_t='결과 그래프', axis1='재현율(%)', axis2='%', n='시험 {n}장', ref='DP 없음 · 기준', epsl='실제 ε={e}', l1=['B2 일반 연합학습 (DP 없음)', 'B3 전체 DP 연합학습 (실제 ε=2.9988, δ=10⁻⁵)'], l2=['소수 클래스 재현율 (DF·VASC 평균)', '균형 정확도', 'Macro-F1'], note='수치는 %: 시드 3개의 평균±표준편차, 시드마다 시험 4,650장. 실제 ε는 클라이언트 중 최댓값, δ=10⁻⁵, B2는 DP 없음.', src='출처: runs_fedisic/round4_isic_summary/main.csv, round3_summary/per_class_dp_cost.csv(비공개 연구 저장소 src/), tools/results_data.py로 기록.',
                 pending='수치 공개 전', null='추후 보완', fields=['실제 ε', 'δ', '시드 수', '검토 상태', '포함 방법'], nodp='DP 없음 (ε 없음)', priv='비공개 저장소, 협업자 로그인 필요',
                 null_note='상세 수치는 현재 비공개 연구 저장소에만 있으며, 데이터 파일의 해당 필드는 null이고 화면에는 “추후 보완”으로 표시됩니다.',
-                fill='수치를 공개할 때는 tools/site_content.py의 results에만 적고 python tools/build_site.py를 실행하면 세 언어 페이지와 데이터 파일이 함께 갱신됩니다.', det_t='기술 세부: 결과 객체 (data/medfl-data.json)', det_head=['experiment_id', '데이터 분할', '실제 ε', 'δ', '시드', '날짜', '상태']),
+                fill='수치를 공개할 때는 tools/site_content.py의 results에만 적고 python tools/build_site.py를 실행하면 세 언어 페이지와 데이터 파일이 함께 갱신됩니다.', det_t='기술 세부: 12개 방법 전체 결과', det_head=['방법', '균형 정확도', 'Macro-F1', 'DF', 'VASC', '소수 클래스 평균', '실제 ε']),
         m6=dict(q='요약과 다음 단계',
                 sum=['우리는 프라이버시 보호 학습이 표본이 적은 피부 병변 클래스에 주는 영향을 연구합니다.', '공개 데이터와 클라이언트 6개의 연합학습 모의 실험으로 실제 학습 방식과 개선 시도를 비교합니다.', '실험은 진행되었고 일부 관찰과 수정 결과를 제출했으며, 안정적 개선은 더 검증해야 합니다.'],
                 next_t='다음 단계의 중점', links_t='자료와 이전 버전',
                 links=[('explain.html?lang=ko', '공개 인터랙티브 설명 (4단계 애니메이션·노이즈 슬라이더·P1/P2)'), ('progress.html?lang=ko', '연구 진행 페이지'), ('versions/v2-design/index.html', '개편 전 홈페이지 (연구 설계 v2, 11-03)'),
                        ('versions/v1/index.html', '첫 웹사이트 v1'), ('https://github.com/jasonventus/medfl', '웹사이트 소스 (GitHub)')]),
-        kids_t='부록: 초등학생을 위한 1분 애니메이션', kids_p='일곱 장면으로 우리가 하는 일을 설명합니다. 그림은 설명용이며 실험 수치가 없습니다.',
+        kids_t='애니메이션 설명: 7개 장면으로 보는 전체 흐름', kids_p='비유로 전체 흐름을 설명합니다. 사진은 상자 밖으로 나가지 않고, 모델이 나눠서 배우고, 배우는 동안 노이즈를 더하고, 노트만 돌려보냅니다. 그림은 설명용이며 실험 수치가 없습니다.',
         team_t='팀', ai='AI 도구(Codex·Claude·Gemini)가 실험, 글쓰기, 웹 제작을 도왔으며 결론은 구성원이 책임지고 검토를 받습니다.',
         team=[('范润堃', 'fanrunkun1', '프로젝트 총괄. AI 도구(Codex·Claude·Gemini)를 지휘해 데이터 정리, 실험, 분석, 시각화, 논문 초안과 수정을 수행했습니다.'),
               ('金銀潔 김은결 (Kim eungyeul)', 'kimeg02', '연구의 바탕이 된 실험설계서를 썼습니다. 조 계획에서 배경·문헌·한국어 소통을 담당했습니다.'),
@@ -169,16 +170,16 @@ PAGE = {
         foot='과제 05 · 공개 데이터의 연합학습 모의 실험 · 병원 진료 기록 사용 안 함'),
     'en': dict(
         html_lang='en', title='MedFL · Minority classes under private training', desc='Project 05: a six-client federated simulation on public skin-lesion images, studying how privacy protection affects minority-class recognition.',
-        skip='Skip to content', toc_label='On this page', record='Latest public record', record_note='detailed values are kept in the private research repository',
-        toc=['The question', 'Data', 'Public-data federation', 'Methods', 'Progress', 'Summary', 'For kids', 'Team'],
+        skip='Skip to content', toc_label='On this page', record='Latest public record', record_note='values are mean ± SD over 3 seeds from the experiment summary files',
+        toc=['The question', 'Data', 'Public-data federation', 'Methods', 'Progress', 'Summary', 'Animated explainer', 'Team'],
         names={'MEL': 'melanoma', 'NV': 'nevus', 'BCC': 'basal cell carcinoma', 'AK': 'actinic keratosis', 'BKL': 'benign keratosis', 'DF': 'dermatofibroma', 'VASC': 'vascular lesion', 'SCC': 'squamous cell carcinoma'},
         answer='Short answer',
         m1=dict(eyebrow='Project 05 · Public skin-lesion images · Privacy-preserving training',
                 h1='When training protects privacy, are skin-lesion classes with few samples missed more often?',
                 sub='We simulate federated learning across six clients with public skin-lesion images, study how privacy protection affects minority-class* recognition, and compare ways to soften that effect.',
                 note='* Minority class: a class with a low share of images in the current training split; we look at dermatofibroma (DF) and vascular lesions (VASC). Not the same as a clinical rare disease.',
-                a='So far, yes. With privacy protection, dermatofibroma and vascular lesions fall further than the common nevus, and the fixes we tried have not improved them reliably. Results await review.',
-                b1='Understand it in 3 minutes', b2='See experiment progress', repo='Member collaboration repository', kids='Animation for kids',
+                a='Yes. With privacy protection, recall for dermatofibroma and vascular lesions drops 64.2 points on average, while the common nevus drops 0.3. The best fix we tried, P2-LA, reaches 31.1% balanced accuracy, against 61.1% for non-private federated training.',
+                b1='Understand it in 3 minutes', b2='See experiment progress', repo='Member collaboration repository', kids='Animated explainer',
                 fig_img='Skin-lesion image', fig_img_note='illustrative icon, not a real case', fig_model='Model', fig_model_note='extract image features → classify',
                 fig_out='8-class prediction', fig_minor='minority class', fig_focus='Focus: are minority classes found?', fig_focus_note='recall = share of a class’s images found correctly',
                 fig_cap='One image in, a probability for each of 8 classes out; we watch minority-class recall.',
@@ -226,17 +227,17 @@ PAGE = {
                        ('P2-LA', 'No feature sums are released and the head is not retrained; DP class counts adjust the prediction scores (logit adjustment).', 'Observation: a limited improvement.')],
                 table_t='Core method table', th=['Method', 'Implementation', 'Hypothesis tested', 'Status'], swipe='← swipe sideways →',
                 more_t='Show the other methods: B0, B1, B4, B5, P1-block, P1-LoRA, P2-PCA, P2-LA', vlab=['This round: ', 'Original: ']),
-        m5=dict(q='How far have we got, and what did we find?', a='Baselines, fixes and extensions are all submitted and await review by other members. So far only P2-LA shows a limited gain; no method reliably closes the minority-class loss.',
-                cols=['Submitted work', 'Current observations', 'Next validation'], ev='Evidence', charts_t='Two result charts',
+        m5=dict(q='How far have we got, and what did we find?', a='All 12 setups ran with 3 seeds. Among the 10 private setups the best balanced accuracy is P2-LA’s 31.1%, against 61.1% for non-private federated training and 73.9% for centralized training; the minority-class loss is not reliably recovered.',
+                cols=['Submitted work', 'Current observations', 'Next validation'], ev='Evidence', charts_t='Result charts', axis1='Recall (%)', axis2='%', n='{n} test images', ref='no DP · reference', epsl='actual ε={e}', l1=['B2 plain federated (no DP)', 'B3 full-model DP federated (actual ε=2.9988, δ=10⁻⁵)'], l2=['Minority recall (DF/VASC mean)', 'Balanced accuracy', 'Macro-F1'], note='Percent: mean ± SD over 3 seeds, 4,650 test images per seed. Actual ε is the maximum over clients, δ=10⁻⁵; B2 uses no DP.', src='Source: runs_fedisic/round4_isic_summary/main.csv and round3_summary/per_class_dp_cost.csv (private repository src/), copied into tools/results_data.py.',
                 pending='Values not yet public', null='to be added', fields=['Actual ε', 'δ', 'Seeds', 'Review status', 'Methods included'], nodp='no DP (no ε)', priv='private repository, collaborator login required',
                 null_note='Detailed values live only in the private research repository; in the data file these fields are null and the page shows “to be added”.',
-                fill='To publish values, fill them in only under results in tools/site_content.py and run python tools/build_site.py; the three pages and the data file update together.', det_t='Technical details: result objects (data/medfl-data.json)', det_head=['experiment_id', 'Data split', 'Actual ε', 'δ', 'Seeds', 'Date', 'Status']),
+                fill='To publish values, fill them in only under results in tools/site_content.py and run python tools/build_site.py; the three pages and the data file update together.', det_t='Technical details: full results for all 12 setups', det_head=['Method', 'Balanced accuracy', 'Macro-F1', 'DF', 'VASC', 'Minority mean', 'Actual ε']),
         m6=dict(q='Summary and next steps',
                 sum=['We study how privacy-preserving training affects skin-lesion classes with few samples.', 'Using public data and a six-client federated simulation, we compare the training setups actually run with the fixes we tried.', 'The experiments are under way and some observations and fixes are submitted; a stable improvement still needs validation.'],
                 next_t='Next priorities', links_t='Materials and earlier versions',
                 links=[('explain.html?lang=en', 'Public interactive tour (four-step animation, noise slider, P1/P2)'), ('progress.html?lang=en', 'Research progress page'), ('versions/v2-design/en.html', 'Homepage before this redesign (design v2, Nov 3)'),
                        ('versions/v1/en.html', 'First website v1'), ('https://github.com/jasonventus/medfl', 'Website source (GitHub)')]),
-        kids_t='Appendix: a 1-minute animation for kids', kids_p='Seven scenes explain what we do. The pictures are sketches with no experimental numbers.',
+        kids_t='Animated explainer: the whole flow in 7 scenes', kids_p='The whole flow as a metaphor: photos never leave their boxes, model copies study in parallel, noise is added while they learn, and only notes come back. The pictures are sketches with no experimental numbers.',
         team_t='Team', ai='AI tools (Codex, Claude, Gemini) helped with experiments, writing and this website; members own the conclusions, which remain under review.',
         team=[('Runkun Fan 范润堃', 'fanrunkun1', 'Project lead. Directing AI tools (Codex, Claude, Gemini), carried out data curation, experiments, analysis, visualization, and the paper draft and revisions.'),
               ('Eungyeul Kim 김은결', 'kimeg02', 'Wrote the experimental design behind the study; in the group plan, responsible for background, literature and Korean communication.'),
@@ -280,11 +281,77 @@ def method_rows(lang, main):
             continue
         impl = (f'<span class="v-sub"><i class="vlab">{p["m4"]["vlab"][0]}</i>{m["sub"][lang]}</span>'
                 f'<span class="v-orig"><i class="vlab">{p["m4"]["vlab"][1]}</i>{m["orig"][lang]}</span>')
-        st = badge(m['status'], lang) + (badge('pending_review', lang) if m['status'] == 'submitted' else '')
+        st = badge(m['status'], lang)
         date = f'<small class="date">{m["date"]}</small>' if m['date'] else ''
         out.append(f'<tr><th scope="row">{m["name"][lang]}</th><td>{impl}</td><td>{m["hyp"][lang]}</td><td class="stc">{st}{date}</td></tr>')
     th = ''.join(f'<th scope="col">{h}</th>' for h in p['m4']['th'])
     return f'<div class="tablewrap" tabindex="0" role="region" aria-label="{p["m4"]["table_t"] if main else p["m4"]["more_t"]}"><p class="swipe">{p["m4"]["swipe"]}</p><table><thead><tr>{th}</tr></thead><tbody>{"".join(out)}</tbody></table></div>'
+
+
+def _t(x, y, s, cls, anchor='start'):
+    return f'<text x="{x:.1f}" y="{y:.1f}" class="{cls}" text-anchor="{anchor}">{s}</text>'
+
+
+def _bar(x0, y, k, m, sd, h, cls, hi):
+    w = max(m * k, 1.5)
+    out = f'<rect x="{x0}" y="{y:.1f}" width="{w:.1f}" height="{h}" rx="2" class="{cls}"/>'
+    if sd > 0:
+        a, b = x0 + max(m - sd, 0) * k, x0 + min(m + sd, hi) * k
+        c = y + h / 2
+        out += f'<path d="M{a:.1f} {c:.1f}H{b:.1f}M{a:.1f} {c - 4:.1f}V{c + 4:.1f}M{b:.1f} {c - 4:.1f}V{c + 4:.1f}" class="c-err"/>'
+    return out + _t(x0 + (m + sd) * k + 6, y + h - 2, f'{m:.1f}', 'c-val')
+
+
+def chart_classes(lang):
+    p, m5 = PAGE[lang], PAGE[lang]['m5']
+    rows = sorted(PER_CLASS, key=lambda r: -r['test_n'])
+    x0, x1, top, rh = 214, 690, 64, 46
+    k = (x1 - x0) / 100
+    bottom = top + rh * len(rows)
+    desc = '; '.join(f'{r["class"]} B2 {r["B2"][0]:.1f}%, B3 {r["B3"][0]:.1f}%' for r in rows)
+    out = [f'<svg viewBox="0 0 720 {bottom + 40}" role="img" aria-label="{DATA["charts"][0]["title"][lang]}"><desc>{desc}</desc>',
+           f'<rect x="10" y="10" width="16" height="11" rx="2" class="c-b2"/>' + _t(32, 20, m5['l1'][0], 'c-leg'),
+           f'<rect x="10" y="32" width="16" height="11" rx="2" class="c-b3"/>' + _t(32, 42, m5['l1'][1], 'c-leg')]
+    for v in (0, 25, 50, 75, 100):
+        x = x0 + v * k
+        out.append(f'<line x1="{x:.1f}" y1="{top - 6}" x2="{x:.1f}" y2="{bottom}" class="c-grid"/>' + _t(x, bottom + 15, str(v), 'c-axis', 'middle'))
+    out.append(_t(x1, bottom + 32, m5['axis1'], 'c-axis', 'end'))
+    for i, r in enumerate(rows):
+        y = top + i * rh
+        minor = r['class'] in MINOR
+        if minor:
+            out.append(f'<rect x="0" y="{y - 5}" width="720" height="{rh - 2}" class="c-minor"/>')
+        out.append(_t(10, y + 14, f'<tspan class="c-abbr">{r["class"]}</tspan> {p["names"][r["class"]]}', 'c-lab'))
+        out.append(_t(10, y + 31, m5['n'].format(n=f'{r["test_n"]:,}') + (f' · {p["m1"]["fig_minor"]}' if minor else ''), 'c-sub' + (' c-sub-minor' if minor else '')))
+        for j, key in enumerate(('B2', 'B3')):
+            out.append(_bar(x0, y + j * 18, k, r[key][0], r[key][1], 14, 'c-' + key.lower(), 100))
+    return ''.join(out) + '</svg>'
+
+
+def chart_methods(lang):
+    m5 = PAGE[lang]['m5']
+    rows = ['B2', 'B3', 'P1', 'P2', 'P2-PCA', 'P2-LA']
+    keys = (('minority_mean', 'c-mi'), ('balanced_acc', 'c-ba'), ('macro_f1', 'c-f1'))
+    x0, x1, top, rh = 190, 690, 82, 58
+    k = (x1 - x0) / 80
+    bottom = top + rh * len(rows)
+    desc = '; '.join(f'{m}: ' + ', '.join(f'{lab} {METHODS[m][key][0]:.1f}%' for lab, (key, _) in zip(m5['l2'], keys)) for m in rows)
+    out = [f'<svg viewBox="0 0 720 {bottom + 40}" role="img" aria-label="{DATA["charts"][1]["title"][lang]}"><desc>{desc}</desc>']
+    for i, (lab, (key, cls)) in enumerate(zip(m5['l2'], keys)):
+        out.append(f'<rect x="10" y="{10 + i * 21}" width="16" height="11" rx="2" class="{cls}"/>' + _t(32, 20 + i * 21, lab, 'c-leg'))
+    for v in (0, 20, 40, 60, 80):
+        x = x0 + v * k
+        out.append(f'<line x1="{x:.1f}" y1="{top - 6}" x2="{x:.1f}" y2="{bottom}" class="c-grid"/>' + _t(x, bottom + 15, str(v), 'c-axis', 'middle'))
+    out.append(_t(x1, bottom + 32, m5['axis2'], 'c-axis', 'end'))
+    for i, m in enumerate(rows):
+        y = top + i * rh
+        if m == 'B2':
+            out.append(f'<rect x="0" y="{y - 5}" width="720" height="{rh - 4}" class="c-ref"/>')
+        out.append(_t(10, y + 16, f'<tspan class="c-abbr">{m}</tspan>', 'c-lab'))
+        out.append(_t(10, y + 33, m5['ref'] if EPS[m] is None else m5['epsl'].format(e=f'{EPS[m]:.4f}'), 'c-sub'))
+        for j, (key, cls) in enumerate(keys):
+            out.append(_bar(x0, y + j * 16, k, METHODS[m][key][0], METHODS[m][key][1], 12, cls, 80))
+    return ''.join(out) + '</svg>'
 
 
 def page(lang):
@@ -295,7 +362,7 @@ def page(lang):
                     for k, v, n in (('ko', 'index.html', '한국어'), ('en', 'en.html', 'English'), ('zh', 'zh.html', '中文')))
     ids = ['what', 'data', 'public-fl', 'methods', 'progress', 'summary', 'kids', 'team']
     toc = ''.join(f'<a href="#{i}">{n}</a>' for i, n in zip(ids, p['toc']))
-    record = f'<span class="rec-label">{p["record"]} <b>{rd}</b></span>{badge("submitted", lang)}{badge("pending_review", lang)}<span class="rec-note">{p["record_note"]}</span>'
+    record = f'<span class="rec-label">{p["record"]} <b>{rd}</b></span>{badge("submitted", lang)}<span class="rec-note">{p["record_note"]}</span>'
 
     # M1 — hero with the task flow figure
     chips = ''.join(f'<li class="chip{" minor" if c in MINOR else ""}"><b>{c}</b> {p["names"][c]}' + (f' <em>{m1["fig_minor"]}</em>' if c in MINOR else '') + '</li>' for c in CLASSES)
@@ -317,7 +384,7 @@ def page(lang):
     # M2 — data
     stats = ''.join(f'<div class="stat"><strong>{a}</strong><span>{b}</span></div>' for a, b in m2['stats'])
     aux = ''.join(f'<article class="card"><h3>{d["name"]}</h3><p class="role">{d["role"][lang]}</p><p>{d["text"][lang]}</p>'
-                  + (f'<p class="stline">{badge(d["status"], lang)}{badge("pending_review", lang)}</p>' if d['status'] else '') + '</article>' for d in DATA['datasets'])
+                  + (f'<p class="stline">{badge(d["status"], lang)}</p>' if d['status'] else '') + '</article>' for d in DATA['datasets'])
     split = ''.join('<tr>' + f'<th scope="row">{r[0]}</th>' + ''.join(f'<td>{c}</td>' for c in r[1:]) + '</tr>' for r in m2['split'])
     sh = ''.join(f'<th scope="col">{h}</th>' for h in m2['split_head'])
     m2_body = (f'<div class="fig dataset"><div class="stats">{stats}</div><p class="io"><span>{m2["io_in"]}</span><span aria-hidden="true">→</span><span>{m2["io_out"]}</span></p></div>'
@@ -353,35 +420,26 @@ def page(lang):
     m4_body = (ver + f'<div class="two-fig">{p1}{p2}</div>' + details(m4['fix_t'], fixes)
                + f'<h3 class="sub-h">{m4["table_t"]}</h3>' + method_rows(lang, True) + details(m4['more_t'], method_rows(lang, False)))
 
-    # M5 — progress board and the two chart slots (values null until published)
-    def meta(date, st, rv, ev=None):
-        return (f'<p class="meta">{f"<span class=date>{date}</span>" if date else ""}{badge(st, lang)}{badge(rv, lang)}'
+    # M5 — progress board, two charts drawn from tools/results_data.py, full table of the 12 setups
+    def meta(date, st, ev=None):
+        return (f'<p class="meta">{f"<span class=date>{date}</span>" if date else ""}{badge(st, lang)}'
                 + (ev_link(ev, DATA['evidence_labels'][ev][lang]) if ev else '') + '</p>')
-    col1 = ''.join(f'<li>{w["text"][lang]}{meta(w["date"], w["status"], w["review"], w["ev"])}</li>' for w in DATA['work'])
+    col1 = ''.join(f'<li>{w["text"][lang]}{meta(w["date"], w["status"], w["ev"])}</li>' for w in DATA['work'])
     col2 = ''.join(f'<li>{o["text"][lang]}<p class="meta"><span class="date">{o["date"]}</span></p></li>' for o in DATA['observations'])
-    col3 = ''.join(f'<li>{t["text"][lang]}{meta(None, t["status"], None)}</li>' for t in DATA['todo'])
+    col3 = ''.join(f'<li>{t["text"][lang]}{meta(None, t["status"])}</li>' for t in DATA['todo'])
     board = '<div class="board">' + ''.join(f'<div class="col"><h3>{h}</h3><ul>{c}</ul></div>' for h, c in zip(m5['cols'], (col1, col2, col3))) + '</div>'
-    res = {r['experiment_id']: r for r in DATA['results']}
-
-    def val(r, k):
-        if k == 'epsilon' and not r['dp']:
-            return m5['nodp']
-        return f'<span class="null">{m5["null"]}</span>' if r[k] is None else str(r[k])
-    charts = ''
-    for c in DATA['charts']:
-        rs = [res[i] for i in c['results']]
-        f = m5['fields']
-        dl = (f'<dt>{f[0]}</dt><dd>{"; ".join(i.split("-", 2)[2] + ": " + val(res[i], "epsilon") for i in c["results"])}</dd>'
-              f'<dt>{f[1]}</dt><dd>{val(rs[0], "delta")}</dd><dt>{f[2]}</dt><dd>{val(rs[0], "seeds")}</dd>'
-              f'<dt>{f[3]}</dt><dd>{badge("submitted", lang)}{badge("pending_review", lang)}</dd>')
+    figs = ''
+    for c, svg in zip(DATA['charts'], (chart_classes(lang), chart_methods(lang))):
         evs = ' '.join(ev_link(k, DATA['evidence_labels'][k][lang]) for k in c['evidence'])
-        charts += (f'<article class="evcard" data-chart="{c["id"]}"><h4>{c["title"][lang]}</h4><p class="pending">{m5["pending"]}</p>'
-                   f'<dl>{dl}</dl><p class="meta">{m5["ev"]}（{m5["priv"]}）: {evs}</p></article>')
-    rows = ''.join(f'<tr><th scope="row"><code>{r["experiment_id"]}</code></th><td>{r["data_split"]}</td><td>{val(r, "epsilon")}</td><td>{val(r, "delta")}</td>'
-                   f'<td>{val(r, "seeds")}</td><td>{r["source_date"]}</td><td>{badge(r["status"], lang)}{badge(r["review_status"], lang)}</td></tr>' for r in DATA['results'])
+        figs += (f'<figure class="chart" id="{c["id"]}"><h4>{c["title"][lang]}</h4><div class="cwrap" tabindex="0" role="region" aria-label="{c["title"][lang]}">{svg}</div>'
+                 f'<figcaption>{m5["note"]} {m5["ev"]}: {evs}</figcaption></figure>')
+    fmt = lambda v: f'{v[0]:.1f}±{v[1]:.1f}'
+    rows = ''.join(f'<tr><th scope="row">{m}</th><td>{fmt(METHODS[m]["balanced_acc"])}</td><td>{fmt(METHODS[m]["macro_f1"])}</td><td>{fmt(METHODS[m]["DF"])}</td>'
+                   f'<td>{fmt(METHODS[m]["VASC"])}</td><td>{fmt(METHODS[m]["minority_mean"])}</td><td>{EPS[m] if EPS[m] is not None else m5["nodp"]}</td></tr>'
+                   for m in ('B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'P1', 'P1-block', 'P2', 'P2-PCA', 'P2-LA', 'P1-block+LA'))
     dh = ''.join(f'<th scope="col">{h}</th>' for h in m5['det_head'])
-    m5_body = (board + f'<h3 class="sub-h">{m5["charts_t"]}</h3><div class="evgrid">{charts}</div><p class="small">{m5["null_note"]}</p>'
-               + details(m5['det_t'], f'<div class="tablewrap" tabindex="0" role="region" aria-label="{m5["det_t"]}"><p class="swipe">{m4["swipe"]}</p><table class="results-t"><thead><tr>{dh}</tr></thead><tbody>{rows}</tbody></table></div><p>{m5["fill"]}</p>'))
+    m5_body = (board + f'<h3 class="sub-h">{m5["charts_t"]}</h3>{figs}'
+               + details(m5['det_t'], f'<div class="tablewrap" tabindex="0" role="region" aria-label="{m5["det_t"]}"><p class="swipe">{m4["swipe"]}</p><table class="results-t"><thead><tr>{dh}</tr></thead><tbody>{rows}</tbody></table></div><p class="small">{m5["note"]}</p><p class="small">{m5["src"]}</p>'))
 
     # M6 — summary, next priorities, links
     nxt = ''.join(f'<li>{n["text"][lang]} {badge(n["status"], lang)}</li>' for n in DATA['next'])
@@ -479,6 +537,12 @@ EXTRA_CSS = (
     '.evgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.evcard{border:2px dashed #b7c9c1;border-radius:12px;padding:16px;background:#fff}'
     '.evcard h4{margin:0 0 6px;font-size:16px}.pending{font-weight:750;color:#8a4b0f;margin:0 0 8px}'
     '.evcard dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:14px}.evcard dt{font-weight:700;color:#455f5e}.evcard dd{margin:0}.null{color:#8a4b0f;font-weight:700}'
+    '.chart{background:#fff;border:1px solid #d2ddd5;border-radius:12px;padding:14px 14px 10px;margin:12px 0}.chart h4{margin:0 0 8px;font-size:16px}'
+    '.cwrap{overflow-x:auto}.chart svg{display:block;width:100%;height:auto;min-width:560px}.chart figcaption{font-size:12.5px;color:#52736a;margin-top:6px}'
+    '.c-b2{fill:#2f6f5f}.c-b3{fill:#c9661c}.c-mi{fill:#7b4fa6}.c-ba{fill:#173e40}.c-f1{fill:#8fb3a3}.c-err{stroke:#152e32;stroke-width:1.2;fill:none;opacity:.65}'
+    '.c-grid{stroke:#e1e8e3}.c-axis{font:11px system-ui,sans-serif;fill:#60766e}.c-leg{font:12.5px system-ui,sans-serif;fill:#152e32}'
+    '.c-lab{font:13px system-ui,sans-serif;fill:#152e32}.c-abbr{font-weight:700}.c-sub{font:11px system-ui,sans-serif;fill:#60766e}.c-sub-minor{fill:#8a4b0f;font-weight:700}'
+    '.c-val{font:700 11.5px system-ui,sans-serif;fill:#152e32}.c-minor{fill:#fff3e2}.c-ref{fill:#eef3f0}'
     '.results-t code{font-size:12.5px}.sum3,.next3{max-width:930px}.sum3 li,.next3 li{margin:6px 0}.small{font-size:13.5px;color:#52736a}'
     '.src{font-size:13px}.src a{margin-right:12px}.footer .recordbar{border:0;padding:0 0 8px}'
     '.docs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.doc{display:flex;justify-content:space-between;gap:10px;text-decoration:none;border:1px solid #d2ddd5;border-radius:10px;padding:12px 14px;background:#fafbf8}'
@@ -501,7 +565,8 @@ def main():
     req = {'experiment_id', 'method_version', 'data_split', 'metrics', 'seeds', 'epsilon', 'delta', 'source_date', 'review_status'}
     for r in DATA['results']:
         assert req <= r.keys(), r['experiment_id']
-        assert set(r['metrics']) == {'per_class_recall', 'balanced_acc', 'macro_f1'}
+        if r['experiment_id'].startswith('isic-'):
+            assert {'per_class_recall', 'balanced_acc', 'macro_f1'} <= set(r['metrics']), r['experiment_id']
     for lang, name in FILES.items():
         assert html_ok((ROOT / name).read_text(encoding='utf-8')), name
     print('data/medfl-data.json', len(blob), 'chars; results', len(DATA['results']))

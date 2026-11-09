@@ -23,11 +23,11 @@ Research documents and unpublished experiments stay in the [private research rep
 
 [한국어](https://jasonventus.github.io/medfl/index.html) · [English](https://jasonventus.github.io/medfl/en.html) · [中文](https://jasonventus.github.io/medfl/zh.html) · [변경 기록 / Change log / 修改记录](RESEARCH_UPDATE_20261109.md)
 
-한국어: 6개 모듈(무엇을 연구하나·데이터·공개 데이터 연합·방법·진행·요약)과 초등학생용 애니메이션. 사실·상태·결과는 `tools/site_content.py` 한 곳에서 고치고 `python tools/build_site.py`로 세 언어 페이지와 `data/medfl-data.json`을 함께 다시 만듭니다. 상세 수치는 비공개이며 데이터 파일에서 `null`입니다.
+한국어: 6개 모듈(무엇을 연구하나·데이터·공개 데이터 연합·방법·진행·요약)과 애니메이션 설명. 사실·상태·결과는 `tools/site_content.py` 한 곳에서 고치고 `python tools/build_site.py`로 세 언어 페이지와 `data/medfl-data.json`을 함께 다시 만듭니다. 실험 결과(12개 방법, 시드 3개)는 `tools/results_data.py`에서 읽어 그래프와 표로 공개합니다.
 
-English: Six modules (question, data, public-data federation, methods, progress, summary) plus an animation for kids. Edit facts, statuses and results only in `tools/site_content.py`, then run `python tools/build_site.py` to regenerate all three pages and `data/medfl-data.json`. Detailed values stay private and are `null` in the data file.
+English: Six modules (question, data, public-data federation, methods, progress, summary) plus an animated explainer. Edit facts, statuses and results only in `tools/site_content.py`, then run `python tools/build_site.py` to regenerate all three pages and `data/medfl-data.json`. Results for the 12 setups (3 seeds) are read from `tools/results_data.py` and published as charts and a table.
 
-中文：6 个模块（研究什么、数据、公开数据联邦、方法、进展、总结）和小学生版动画。事实、状态和结果只改 `tools/site_content.py`，再运行 `python tools/build_site.py` 同时重建三语页面和 `data/medfl-data.json`。详细数值不公开，数据文件中为 `null`。
+中文：6 个模块（研究什么、数据、公开数据联邦、方法、进展、总结）和动画说明。事实、状态和结果只改 `tools/site_content.py`，再运行 `python tools/build_site.py` 同时重建三语页面和 `data/medfl-data.json`。12 种方案（3 个种子）的实验结果从 `tools/results_data.py` 读取，以图和表公开。
 
 ## Versions · 버전 · 历史版本
 - [v1 한국어](versions/v1/index.html) · [v1 English](versions/v1/en.html) · [v1 中文](versions/v1/zh.html)

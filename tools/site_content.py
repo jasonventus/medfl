@@ -1,5 +1,8 @@
 # Single source for the MedFL site: facts, statuses, results (null until published) and ko/en/zh copy.
+# Results come from tools/results_data.py (copied from the experiment summaries).
 # build_site.py turns DATA into data/medfl-data.{json,js} (read by every page) and PAGE into index/en/zh.html.
+
+from results_data import PER_CLASS, METHODS, EPS, DELTA
 
 PRIV = 'https://github.com/jasonventus/healthcare-ai-project05/blob/'
 R23, R4, R12 = '84ab6a2e9433db4023fe40629eff7814c2d09043', 'b24f91f554e6e998fb79f4af87edb4a7ca275f5e', 'edeec2bf2aaa66a0dd082ed0d1d308884229a34d'
@@ -33,6 +36,7 @@ STATUS = {  # enumerated review states; every badge shows a symbol and text, nev
     'pending_review': {'sym': '◐', 'zh': '待复核', 'ko': '검토 대기', 'en': 'Pending review'},
     'reviewed': {'sym': '✓', 'zh': '已复核', 'ko': '검토 완료', 'en': 'Reviewed'},
     'not_started': {'sym': '○', 'zh': '尚未开展', 'ko': '시작 전', 'en': 'Not started'},
+    'not_required': {'sym': '–', 'zh': '无需复核', 'ko': '검토 불필요', 'en': 'Review not required'},  # project lead's decision, 2026-11-09
 }
 
 
@@ -43,12 +47,34 @@ def T(zh, ko, en):
 SPLIT = 'Fed-ISIC2019 (FLamby): train 18,597 in 6 clients / test 4,650 pooled'
 
 
-def result(eid, ver, date, ev, dp=True, split=SPLIT):
-    # detailed values live in the private research repository; they stay null here until the team publishes them
-    return {'experiment_id': eid, 'method_version': ver, 'data_split': split, 'dp': dp,
-            'metrics': {'per_class_recall': None, 'balanced_acc': None, 'macro_f1': None},
-            'seeds': None, 'epsilon': None, 'delta': None, 'source_date': date,
-            'status': 'submitted', 'review_status': 'pending_review', 'evidence': ev}
+ROUND4_ONLY = {'B1', 'B5', 'P1-block', 'P1-block+LA'}
+ISIC_ORDER = ['B0', 'B1', 'B2', 'B3', 'B4', 'B5', 'P1', 'P1-block', 'P2', 'P2-PCA', 'P2-LA', 'P1-block+LA']
+
+
+def isic_result(m):
+    d, pc = METHODS[m], {r['class']: r for r in PER_CLASS}
+    per_class = {c: r[m][0] for c, r in pc.items()} if m in ('B0', 'B2', 'B3', 'P1') else {'DF': d['DF'][0], 'VASC': d['VASC'][0]}
+    return {'experiment_id': 'isic-' + m, 'method_version': 'submitted', 'data_split': SPLIT, 'dp': EPS[m] is not None,
+            'metrics': {'per_class_recall': per_class, 'balanced_acc': d['balanced_acc'][0], 'balanced_acc_sd': d['balanced_acc'][1],
+                        'macro_f1': d['macro_f1'][0], 'macro_f1_sd': d['macro_f1'][1], 'minority_recall': d['minority_mean'][0],
+                        'minority_recall_sd': d['minority_mean'][1], 'unit': 'percent, mean and sample SD over seeds'},
+            'seeds': d['seeds'], 'epsilon': EPS[m], 'delta': DELTA if EPS[m] is not None else None, 'source_date': '2026-11-03',
+            'status': 'submitted', 'review_status': 'not_required', 'evidence': ['r4_main'] if m in ROUND4_ONLY else ['r23_methods', 'r23_class']}
+
+
+OTHER_RESULTS = [
+    {'experiment_id': 'mia-r4', 'method_version': 'submitted', 'data_split': 'Fed-ISIC2019: 2,315 members + 2,315 non-members per seed', 'dp': True,
+     'metrics': {'attack_auc_private_models': [0.501, 0.503], 'attack_auc_centralized': 0.613, 'attack_auc_overfit_control': 0.864},
+     'seeds': 3, 'epsilon': None, 'delta': DELTA, 'source_date': '2026-11-03', 'status': 'submitted', 'review_status': 'not_required', 'evidence': ['r4_mia', 'r4_report']},
+    {'experiment_id': 'chest-hernia', 'method_version': 'submitted', 'data_split': 'NIH ChestX-ray14: 10 hospital settings (K=3 with α∈{0.1,0.5,1}, K=5 and K=10 at α=0.5; Hernia spread or concentrated)', 'dp': True,
+     'metrics': {'settings_hernia_cost_above_top3': '10/10', 'settings_paired_ci_excludes_0': 7, 'settings_significant_after_holm': 5,
+                 'mean_auc_14_labels_nondp': [0.612, 0.661], 'mean_auc_14_labels_dp': [0.528, 0.575]},
+     'seeds': 3, 'epsilon': None, 'delta': DELTA, 'source_date': '2026-11-03', 'status': 'submitted', 'review_status': 'not_required', 'evidence': ['r4_chest', 'r4_report']},
+    {'experiment_id': 'pathmnist-course', 'method_version': 'submitted', 'data_split': 'PathMNIST: 3 non-IID nodes, image-patch-level DP', 'dp': True,
+     'metrics': {'accuracy_retention_general_encoders_percent': [96.11, 96.77], 'accuracy_retention_phikon_v2_percent': [99.57, 0.62],
+                 'denominator': 'best centralized head on the same encoder'},
+     'seeds': 3, 'epsilon': 2.9985, 'delta': None, 'source_date': '2026-11-07', 'status': 'submitted', 'review_status': 'not_required', 'evidence': ['r12_report']},
+]
 
 
 DATA = {
@@ -58,25 +84,13 @@ DATA = {
     'status': STATUS,
     'evidence': EV,
     'evidence_labels': EV_LABEL,
-    'results': [
-        result('isic-r23-B2', 'submitted', '2026-11-03', ['r23_class', 'r23_report'], dp=False),
-        result('isic-r23-B3', 'submitted', '2026-11-03', ['r23_class', 'r23_report']),
-        result('isic-r23-P1', 'submitted', '2026-11-03', ['r23_methods']),
-        result('isic-r23-P2', 'submitted', '2026-11-03', ['r23_methods']),
-        result('isic-r23-P2-PCA', 'submitted', '2026-11-03', ['r23_methods']),
-        result('isic-r23-P2-LA', 'submitted', '2026-11-03', ['r23_methods']),
-        result('isic-r4-B5', 'submitted', '2026-11-03', ['r4_main', 'r4_report']),
-        result('isic-r4-P1-block', 'submitted', '2026-11-03', ['r4_main', 'r4_report']),
-        result('mia-r4', 'submitted', '2026-11-03', ['r4_mia', 'r4_report']),
-        result('chest-r4', 'submitted', '2026-11-03', ['r4_chest', 'r4_report'], split='NIH ChestX-ray14: 8 client-partition settings (patient-level DP)'),
-        result('pathmnist-r10-12', 'submitted', '2026-11-07', ['r12_report'], split='PathMNIST: 3 non-IID nodes'),
-    ],
+    'results': [isic_result(m) for m in ISIC_ORDER] + OTHER_RESULTS,
     'charts': [
-        {'id': 'dp-cost-by-class', 'results': ['isic-r23-B2', 'isic-r23-B3'], 'evidence': ['r23_class'],
+        {'id': 'dp-cost-by-class', 'results': ['isic-B2', 'isic-B3'], 'evidence': ['r23_class'],
          'title': T('图表 ①　B2 与 B3 各类别召回率：隐私代价差异',
                     '그래프 ①　B2와 B3의 클래스별 재현율: 프라이버시 비용 차이',
                     'Chart ①　Per-class recall, B2 vs B3: the cost of privacy')},
-        {'id': 'minority-vs-overall', 'results': ['isic-r23-B3', 'isic-r23-P1', 'isic-r23-P2', 'isic-r23-P2-PCA', 'isic-r23-P2-LA'], 'evidence': ['r23_methods', 'r4_main'],
+        {'id': 'minority-vs-overall', 'results': ['isic-B2', 'isic-B3', 'isic-P1', 'isic-P2', 'isic-P2-PCA', 'isic-P2-LA'], 'evidence': ['r23_methods', 'r4_main'],
          'title': T('图表 ②　B3 / P1 / P2 / P2 变体：少数类别召回率与平衡准确率、Macro-F1',
                     '그래프 ②　B3 / P1 / P2 / P2 변형: 소수 클래스 재현율과 균형 정확도·Macro-F1',
                     'Chart ②　B3 / P1 / P2 / P2 variants: minority recall vs balanced accuracy and macro-F1')},
@@ -155,21 +169,20 @@ DATA = {
          'text': T('PathMNIST 课程设置（3 个节点）实验与更强的公开特征提取器（第 10–12 轮）', 'PathMNIST 과목 설정(3개 노드) 실험과 더 강한 공개 특징 추출기 (10–12차)', 'PathMNIST course setting (3 nodes) and stronger public feature extractors (rounds 10–12)')},
     ],
     'observations': [
-        {'date': '2026-11-03', 'text': T('加入隐私保护后，DF、VASC 的召回率比 NV 下降得多。', '프라이버시 보호를 넣으면 DF·VASC 재현율이 NV보다 크게 떨어집니다.', 'With privacy protection, DF and VASC recall falls more than NV recall.')},
-        {'date': '2026-11-03', 'text': T('原版 P2 未见稳定收益；P2-PCA 有升有降；P2-LA 有限改善。', '원래 P2는 안정적 이득 없음, P2-PCA는 클래스마다 오르내림, P2-LA는 제한적 개선.', 'Original P2: no stable gain; P2-PCA: mixed by class; P2-LA: limited gain.')},
-        {'date': '2026-11-03', 'text': T('胸片上，样本少的疝气标签损失也更大。', '흉부 영상에서도 표본이 적은 탈장 레이블의 손실이 더 큽니다.', 'On chest X-rays the sparse Hernia label also loses more.')},
-        {'date': '2026-11-03', 'text': T('加了隐私保护的模型，成员推断攻击接近随机猜测。', '보호된 모델에 대한 멤버십 추론 공격은 무작위 추측 수준입니다.', 'Membership-inference attacks on protected models are near random guessing.')},
-        {'date': '2026-11-09', 'text': T('各方法实际 ε 不完全相同，结果分列 ε、δ，不比“同预算胜负”。', '방법마다 실제 ε가 달라 ε·δ를 따로 적고 “같은 예산 승패”로 비교하지 않습니다.', 'Actual ε differs by method, so ε and δ are listed per result, not as same-budget wins.')},
+        {'date': '2026-11-03', 'text': T('B2→B3：DF 召回 52.1%→0、VASC 76.3%→0，平均降 64.2 个百分点；NV 只降 0.3。', 'B2→B3: DF 재현율 52.1%→0, VASC 76.3%→0으로 평균 64.2%p 하락, NV는 0.3%p 하락.', 'B2→B3: DF recall 52.1%→0 and VASC 76.3%→0, a 64.2-point average drop; NV drops 0.3.')},
+        {'date': '2026-11-03', 'text': T('原版 P2 平衡准确率 17.1%，低于 P1 的 30.3%；P2-PCA 把 DF 召回提到 37.6%，Macro-F1 却只有 4.0%；P2-LA 31.1%，为加隐私方案中最高。', '원래 P2의 균형 정확도는 17.1%로 P1(30.3%)보다 낮고, P2-PCA는 DF 재현율을 37.6%로 올렸지만 Macro-F1이 4.0%입니다. P2-LA는 31.1%로 프라이버시를 적용한 10개 방법 중 가장 높습니다.', 'Original P2 reaches 17.1% balanced accuracy, below P1’s 30.3%; P2-PCA lifts DF recall to 37.6% but macro-F1 falls to 4.0%; P2-LA scores 31.1%, the best of the 10 private setups.')},
+        {'date': '2026-11-03', 'text': T('胸片：10 种医院设置中，疝气的 AUC 代价都大于最常见的 3 个标签（Holm 校正后 5 种显著）；14 个标签平均 AUC 从 0.612–0.661 降到 0.528–0.575。', '흉부 영상: 병원 설정 10개 모두에서 탈장의 AUC 비용이 가장 흔한 레이블 3개보다 컸고, Holm 보정 후 5개가 유의했습니다. 레이블 14개의 평균 AUC는 0.612–0.661에서 0.528–0.575로 떨어졌습니다.', 'Chest X-rays: in all 10 hospital settings Hernia lost more AUC than the three most common labels (5 remain significant after Holm); mean AUC over 14 labels fell from 0.612–0.661 to 0.528–0.575.')},
+        {'date': '2026-11-03', 'text': T('成员推断攻击：加隐私模型的 AUC 为 0.501–0.503（随机猜测为 0.5），集中训练模型为 0.613，过拟合对照为 0.864。', '멤버십 추론 공격: 프라이버시 모델의 AUC는 0.501–0.503(무작위 추측 0.5), 중앙 학습 모델은 0.613, 과적합 대조군은 0.864입니다.', 'Membership inference: AUC 0.501–0.503 on the private models (0.5 is random guessing), 0.613 on the centralized model, 0.864 on an overfitted control.')},
+        {'date': '2026-11-07', 'text': T('PathMNIST（3 个非 IID 节点，ε=2.9985，3 个种子）：DP 联邦分类头的准确率保留率为 96.11–96.77%（4 个通用公开编码器），达到课程目标 ≥95%；病理专用 Phikon-v2 为 99.57±0.62%。', 'PathMNIST(비IID 노드 3개, ε=2.9985, 시드 3개): DP 연합 분류기의 정확도 유지율은 일반 공개 인코더 4개에서 96.11–96.77%로 과목 목표 ≥95%를 넘었고, 병리 전용 Phikon-v2는 99.57±0.62%입니다.', 'PathMNIST (3 non-IID nodes, ε=2.9985, 3 seeds): the DP federated head keeps 96.11–96.77% of centralized accuracy with four general public encoders, meeting the course target of ≥95%; the pathology-specific Phikon-v2 keeps 99.57±0.62%.')},
     ],
     'next': [
-        {'status': 'not_started', 'text': T('复核现有结果与隐私预算（DP 会计、二阶段发布的组合）', '기존 결과와 프라이버시 예산 검토 (DP 회계, 2단계 공개의 합성)', 'Review results and the privacy budget (DP accounting, composition of the second-stage release)')},
-        {'status': 'not_started', 'text': T('完善公平对照与多种子重复验证，补 LoRA 版 P1', '공정한 대조와 다중 시드 반복 검증, LoRA 버전 P1 추가', 'Fairer comparisons and multi-seed repeats; add the LoRA version of P1')},
-        {'status': 'not_started', 'text': T('推进 ChestX-ray14（K=10）与 ISIC 分布变化实验', 'ChestX-ray14(K=10)와 ISIC 분포 변화 실험 진행', 'Extend ChestX-ray14 (K=10) and distribution-shift experiments on ISIC')},
+        {'status': 'not_started', 'text': T('把各方法的实际 ε 对齐（目前 2.2894–3.0000）后再比较', '방법별 실제 ε(현재 2.2894–3.0000)를 맞춘 뒤 다시 비교', 'Compare methods again at matched actual ε (now 2.2894–3.0000)')},
+        {'status': 'not_started', 'text': T('补 LoRA 版 P1，并增加种子数', 'LoRA 버전 P1 추가, 시드 수 확대', 'Add the LoRA version of P1 and more seeds')},
+        {'status': 'not_started', 'text': T('在 ISIC 上做分布变化实验', 'ISIC에서 분포 변화 실험', 'Run distribution-shift experiments on ISIC')},
     ],
-    'todo': [  # items the 11-03 public record listed as unfinished and that are still not started
-        {'status': 'not_started', 'text': T('成员复核：复核人待指定', '구성원 검토: 검토자 미정', 'Member review: reviewers not yet assigned')},
+    'todo': [
+        {'status': 'not_started', 'text': T('对齐实际 ε 后重跑对照', '실제 ε를 맞춘 대조 재실행', 'Rerun comparisons at matched actual ε')},
         {'status': 'not_started', 'text': T('LoRA 版 P1', 'LoRA 버전 P1', 'LoRA version of P1')},
-        {'status': 'not_started', 'text': T('K=10 客户端', 'K=10 클라이언트', 'K=10 clients')},
         {'status': 'not_started', 'text': T('ISIC 上的分布变化验证', 'ISIC 분포 변화 검증', 'Distribution-shift validation on ISIC')},
     ],
     'datasets': [
@@ -181,10 +194,10 @@ DATA = {
          'text': T('只用来选超参数和拟合 P2-PCA 的降维；已剔除与 ISIC 测试集重叠的图片。', '하이퍼파라미터 선택과 P2-PCA 차원 축소에만 씁니다. ISIC 시험 세트와 겹치는 이미지는 뺐습니다.', 'Used only to choose hyperparameters and fit the P2-PCA projection; images overlapping the ISIC test set were removed.')},
         {'id': 'pathmnist', 'name': 'PathMNIST', 'status': 'submitted',
          'role': T('流程验证', '파이프라인 점검', 'Pipeline check'),
-         'text': T('早期流程检查（11-02）；11-07 提交了课程设置（3 个节点）实验。', '초기 파이프라인 점검(11-02). 11-07에 과목 설정(3개 노드) 실험을 제출했습니다.', 'Early pipeline check (Nov 2); a course-setting run with 3 nodes was submitted on Nov 7.')},
+         'text': T('早期流程检查（11-02）；11-07 课程设置（3 个节点）实验：准确率保留率 96.11–96.77%，达到 ≥95%。', '초기 파이프라인 점검(11-02). 11-07 과목 설정(3개 노드) 실험: 정확도 유지율 96.11–96.77%로 ≥95% 달성.', 'Early pipeline check (Nov 2); course setting with 3 nodes (Nov 7): accuracy retention 96.11–96.77%, meeting ≥95%.')},
         {'id': 'chestxray14', 'name': 'NIH ChestX-ray14', 'status': 'submitted',
          'role': T('扩展数据', '확장 데이터', 'Extension'),
-         'text': T('公开胸片 112,120 张、30,805 名患者；11-03 第 4 轮提交了胸片训练。', '공개 흉부 X선 112,120장, 환자 30,805명. 11-03 4차에서 흉부 영상 학습을 제출했습니다.', 'Public chest X-rays: 112,120 images, 30,805 patients. Chest training was submitted in round 4 (Nov 3).')},
+         'text': T('公开胸片 112,120 张、30,805 名患者；10 种医院设置（K=3/5/10）的胸片训练已完成。', '공개 흉부 X선 112,120장, 환자 30,805명. 병원 설정 10개(K=3/5/10)의 흉부 영상 학습 완료.', 'Public chest X-rays: 112,120 images, 30,805 patients. Chest training done in 10 hospital settings (K=3/5/10).')},
     ],
 }
 
@@ -216,7 +229,7 @@ DATA['i18n'] = {
                 ['只带回笔记', '机器人只把“学习笔记”（模型参数）交给老师，老师把 6 份笔记合成一份。照片一直留在箱子里。这叫联邦学习。'],
                 ['少的更容易忘', '雾一样大，照片少的斑点更容易被忘掉。这是实验里看到的现象，图是示意。'],
                 ['我们在想办法', '我们试了几种办法，让少见的斑点也被记住。目前只有小的改善，结果还在等同学检查。']],
-            'prev': '◀ 上一步', 'next': '下一步 ▶', 'play': '▶ 播放', 'pause': '❚❚ 暂停', 'stepOf': '第', 'stage': '给小学生看的联邦学习与差分隐私示意图'},
+            'prev': '◀ 上一步', 'next': '下一步 ▶', 'play': '▶ 播放', 'pause': '❚❚ 暂停', 'stepOf': '第', 'stage': '联邦学习与差分隐私的动画说明'},
     },
     'ko': {
         'round': {
@@ -244,7 +257,7 @@ DATA['i18n'] = {
                 ['공부 노트만 가져와요', '로봇은 ‘공부 노트’(모델 파라미터)만 선생님에게 주고, 선생님은 노트 6개를 하나로 합쳐요. 사진은 계속 상자 안에 있어요. 이것이 연합학습이에요.'],
                 ['적은 것은 잘 잊어요', '안개가 같아도 사진이 적은 점은 더 쉽게 잊혀요. 실험에서 본 현상이고, 그림은 설명용이에요.'],
                 ['방법을 찾고 있어요', '드문 점도 기억하도록 여러 방법을 시험했어요. 아직 조금 나아진 정도이고, 결과는 친구들이 확인하고 있어요.']],
-            'prev': '◀ 이전', 'next': '다음 ▶', 'play': '▶ 재생', 'pause': '❚❚ 멈춤', 'stepOf': '단계', 'stage': '초등학생을 위한 연합학습과 차등 프라이버시 그림'},
+            'prev': '◀ 이전', 'next': '다음 ▶', 'play': '▶ 재생', 'pause': '❚❚ 멈춤', 'stepOf': '단계', 'stage': '연합학습과 차등 프라이버시 애니메이션 설명'},
     },
     'en': {
         'round': {
@@ -272,39 +285,42 @@ DATA['i18n'] = {
                 ['Only notes travel', 'The robots hand only their study notes (model parameters) to the teacher, who merges the six notes into one. The photos never leave the boxes. This is federated learning.'],
                 ['Few photos fade first', 'With the same fog, spots with few photos are forgotten more easily. We saw this in the experiments; the picture is a sketch.'],
                 ['Looking for fixes', 'We tried several ideas to help the robots remember rare spots. So far the gains are small, and teammates are still checking.']],
-            'prev': '◀ Back', 'next': 'Next ▶', 'play': '▶ Play', 'pause': '❚❚ Pause', 'stepOf': 'Step', 'stage': 'Kid-friendly picture of federated learning and differential privacy'},
+            'prev': '◀ Back', 'next': 'Next ▶', 'play': '▶ Play', 'pause': '❚❚ Pause', 'stepOf': 'Step', 'stage': 'Animated explainer of federated learning and differential privacy'},
     },
 }
 
 # overrides merged into explain.html / progress.html copy objects (same keys those pages already use)
 DATA['pages'] = {
     'explain': {
-        'zh': {'notice': '研究计划与阶段进展 · 截至 11 月 9 日：实验已提交，待其他成员复核。下面的点、噪声和流程是概念示意，没有真实患者数据，也不是临床工具。',
-               'latest': '11 月 9 日更新：结果状态统一来自共享数据文件，四步动画改为 6 个客户端', 'latestLink': '查看最新进展 →',
+        'zh': {'notice': '研究计划与阶段进展 · 截至 11 月 9 日：实验结果已在首页公开。下面的点、噪声和流程是概念示意，没有真实患者数据，也不是临床工具。',
+               'latest': '11 月 9 日更新：实验结果已公开，四步动画为 6 个客户端', 'latestLink': '查看最新进展 →',
                'flowLead': '点按四个步骤，看一轮联邦训练怎么走。图中 6 个客户端对应 Fed-ISIC2019 的 6 个来源分区；图像始终留在本地，本地训练用 DP-SGD。',
-               'slider': '调节示意噪声强度（概念示意，非真实 ε 或准确率数值）'},
-        'ko': {'notice': '연구 계획과 단계별 진행 · 11월 9일 기준: 실험 제출, 다른 구성원 검토 대기. 아래 점·노이즈·흐름은 개념 설명이며 실제 환자 데이터나 임상 도구가 아닙니다.',
-               'latest': '11월 9일 업데이트: 결과 상태를 공유 데이터 파일 하나로 통일, 4단계 애니메이션을 클라이언트 6개로 수정', 'latestLink': '최신 진행 보기 →',
+               'slider': '调节示意噪声强度（概念示意，非真实 ε 或准确率数值）',
+               'evidenceTitle': '用实验回答：结果已在首页公开', 'end': '我们已从计划走到 Fed-ISIC 实验：结果和没有成功的尝试都公开在首页“进展”模块。'},
+        'ko': {'notice': '연구 계획과 단계별 진행 · 11월 9일 기준: 실험 결과를 홈페이지에 공개했습니다. 아래 점·노이즈·흐름은 개념 설명이며 실제 환자 데이터나 임상 도구가 아닙니다.',
+               'latest': '11월 9일 업데이트: 실험 결과 공개, 4단계 애니메이션은 클라이언트 6개', 'latestLink': '최신 진행 보기 →',
                'flowLead': '네 단계를 눌러 연합학습 한 라운드를 보세요. 클라이언트 6개는 Fed-ISIC2019의 출처 구획 6개에 대응합니다. 이미지는 계속 로컬에 있고, 로컬 학습은 DP-SGD로 합니다.',
-               'slider': '설명용 노이즈 강도 조절 (개념 설명, 실제 ε나 정확도 값이 아님)'},
-        'en': {'notice': 'Research plan and interim progress · As of Nov 9: experiments submitted, awaiting review by other members. The dots, noise and flows below are conceptual. No real patient data; not a clinical tool.',
-               'latest': 'Nov 9 update: result statuses now come from one shared data file; the four-step animation shows six clients', 'latestLink': 'Read the latest progress →',
+               'slider': '설명용 노이즈 강도 조절 (개념 설명, 실제 ε나 정확도 값이 아님)',
+               'evidenceTitle': '실험으로 답합니다: 결과는 홈페이지에 공개', 'end': '계획에서 Fed-ISIC 실험까지 진행했고, 결과와 실패한 시도를 홈페이지 ‘진행’ 모듈에 공개했습니다.'},
+        'en': {'notice': 'Research plan and progress · As of Nov 9: experimental results are published on the homepage. The dots, noise and flows below are conceptual. No real patient data; not a clinical tool.',
+               'latest': 'Nov 9 update: results published; the four-step animation shows six clients', 'latestLink': 'Read the latest progress →',
                'flowLead': 'Click through one federated round. The six clients match the six source partitions of Fed-ISIC2019; images stay local and local training uses DP-SGD.',
-               'slider': 'Illustrative noise intensity (concept only, not a real ε or accuracy value)'},
+               'slider': 'Illustrative noise intensity (concept only, not a real ε or accuracy value)',
+               'evidenceTitle': 'Experiments answer: results are on the homepage', 'end': 'We have moved from planning to Fed-ISIC experiments; results and failed attempts are published in the homepage Progress module.'},
     },
     'progress': {
-        'zh': {'r4': '第 4 轮报告：B1、B5、P1-block、成员推断攻击、胸片（私有，需协作者登录）', 'r12': '第 10–12 轮报告：PathMNIST 课程设置（私有，需协作者登录）', 'log9': '11 月 9 日三语修改记录',
-               'status': '2026-11-09 · 成员提交 · 待复核 · 尚未合并研究 main',
+        'zh': {'r4': '第 4 轮报告：B1、B5、P1-block、成员推断攻击、胸片（私有，需协作者登录）', 'r12': '第 10–12 轮报告：PathMNIST 课程设置（私有，需协作者登录）', 'log9': '11 月 9 日三语修改记录', 'nextTitle': '下一步', 'next': '把各方法的实际 ε 对齐后再比较；补 LoRA 版 P1 并增加种子数；在 ISIC 上做分布变化实验。',
+               'status': '2026-11-09 · 成员提交 · 结果已公开 · 尚未合并研究 main',
                'lead': '范润堃已提交 Fed-ISIC 第 2–4 轮与课程设置（第 10–12 轮）实验。本页记录真实进展，也保留没有成功的尝试。',
-               'scope': '本页公开进展与方法变化。具体性能数值、逐次日志和未公开实验材料继续留在私有研究库；本次网页更新没有重新训练模型。',
-               'stages': [['已提交 · 待复核', '01 · 流程预试验', 'PathMNIST 第一轮只作流程验证（11-02）。'],
-                          ['已提交 · 待复核', '02 · Fed-ISIC 对照实验', 'B0、B2、B3、P1 多种子实验，比较各类别表现与隐私代价；主数据为 FLamby 六客户端划分（11-03）。'],
-                          ['已提交 · 待复核', '03 · 第二阶段与修正尝试', 'P2、P2-PCA、P2-LA、预算探索与失败诊断（11-03）。“实现了”不等于“解决了”。'],
-                          ['已提交 · 待复核', '04 · 补齐设计中的实验', 'B1、B5、P1-block、成员推断攻击、胸片训练（11-03 第 4 轮）；课程设置下的 PathMNIST 实验（11-07）。'],
-                          ['尚未开展', '05 · 扩展与独立复核', 'LoRA 版 P1、K=10 客户端、ISIC 上的分布变化验证；成员复核人仍待确定。']],
-               'findings': [['RQ1 · 本配置下有支持性观察', '提交者报告：DF/VASC 两个少样本类别的隐私代价大于常见类 NV；胸片上样本少的疝气标签也是如此。观察来自当前公开数据模拟和固定配方，不是对所有罕见病的结论。'],
-                            ['RQ2 · 尚不能宣称方案成功', '原版 P2 未显示稳定收益；P2-PCA 各类别有升有降；P2-LA 只有有限改善；B5 和 P1-block 也没有稳定解决少数类别的损失。'],
-                            ['RQ3 · 部分推进', '胸片 8 种划分设置已提交；K=10 与 ISIC 上的分布变化验证尚未开展。现有结果不代表临床有效或跨医院泛化成立。']],
+               'scope': '本页记录进展与方法变化；具体数值见首页“进展”模块和 data/medfl-data.json。逐次日志和代码仍在私有研究库。',
+               'stages': [['已提交', '01 · 流程预试验', 'PathMNIST 第一轮只作流程验证（11-02）。'],
+                          ['已提交', '02 · Fed-ISIC 对照实验', 'B0、B2、B3、P1 各 3 个种子；B2→B3 时 DF/VASC 召回平均降 64.2 个百分点，NV 降 0.3（11-03）。'],
+                          ['已提交', '03 · 第二阶段与修正尝试', '平衡准确率：P2 17.1%、P2-PCA 15.9%、P2-LA 31.1%。“实现了”不等于“解决了”（11-03）。'],
+                          ['已提交', '04 · 补齐设计中的实验', 'B1、B5、P1-block、成员推断攻击、胸片 10 种设置（11-03 起）；PathMNIST 课程设置保留率 96.11–96.77%（11-07）。'],
+                          ['尚未开展', '05 · 扩展', 'LoRA 版 P1；ISIC 上的分布变化验证；对齐实际 ε 后重跑对照。']],
+               'findings': [['RQ1 · 本配置下成立', '加隐私后 DF/VASC 召回平均降 64.2 个百分点，NV 降 0.3；胸片 10 种设置中疝气的 AUC 代价都大于最常见的 3 个标签。结论限于当前公开数据模拟和固定配方。'],
+                            ['RQ2 · 没有方案稳定解决', '10 种加隐私方案的平衡准确率都不超过 31.1%（P2-LA），不加隐私的联邦训练为 61.1%、集中训练为 73.9%。'],
+                            ['RQ3 · 部分推进', '胸片的 10 种医院设置（K=3/5/10、疝气分散或集中）已完成；ISIC 上的分布变化验证尚未开展。']],
                'variants': {'P2': ['P2 · 受保护的特征和与计数', '在第一阶段模型之上，发布 DP 类别特征和、计数，再构造均衡虚拟特征重训分类器。报告中未得到稳定收益；对少样本类别，高维加噪摘要可能过于不稳定。'],
                             'P2-PCA': ['P2-PCA · 先用公开特征降维，再做摘要', '用 DermaMNIST 特征拟合 PCA，再在低维空间执行第二阶段。DermaMNIST 已剔除与 ISIC 测试集重叠的图片；两者都来自 HAM10000，留下的图片仍在 ISIC 训练集中。报告中部分少数类指标上升，但各类别表现不一致。'],
                             'P2-LA': ['P2-LA · 用受保护计数调整预测分数', '不发布第二阶段特征和，也不生成虚拟特征重训分类器；使用 DP 类别计数调整第一阶段预测分数。报告为有限改善；各方法的实际累计 ε 不完全相同，不能称为同一实际 ε 的严格比较。']},
@@ -313,18 +329,18 @@ DATA['pages'] = {
                            ['BatchNorm', '本轮报告采用固定 ImageNet 统计量的 BatchNorm（eval），并非统一替换 GroupNorm；模块兼容性及隐私前提仍需技术复核。'],
                            ['数据使用', 'DermaMNIST 用于选参和 P2-PCA 降维，已剔除与 ISIC 测试图像的重叠，留下的图片仍在 ISIC 训练集中；NIH ChestX-ray14 在第 4 轮用于胸片训练。'],
                            ['关口与失败', 'B3 seed0 未达到原定继续关口。提交记录说明在保留原配方的情况下补齐种子，并保留这一偏离与失败记录；不能当作已通过关口。']]},
-        'ko': {'r4': '4차 보고서: B1·B5·P1-block·멤버십 추론 공격·흉부 영상 (비공개, 협업자 로그인 필요)', 'r12': '10–12차 보고서: PathMNIST 과목 설정 (비공개, 협업자 로그인 필요)', 'log9': '11월 9일 3개 언어 변경 기록',
-               'status': '2026-11-09 · 구성원 제출 · 검토 대기 · 연구 main 미병합',
+        'ko': {'r4': '4차 보고서: B1·B5·P1-block·멤버십 추론 공격·흉부 영상 (비공개, 협업자 로그인 필요)', 'r12': '10–12차 보고서: PathMNIST 과목 설정 (비공개, 협업자 로그인 필요)', 'log9': '11월 9일 3개 언어 변경 기록', 'nextTitle': '다음 단계', 'next': '방법별 실제 ε를 맞춘 뒤 다시 비교하고, LoRA 버전 P1과 시드를 추가하며, ISIC에서 분포 변화 실험을 합니다.',
+               'status': '2026-11-09 · 구성원 제출 · 결과 공개 · 연구 main 미병합',
                'lead': '范润堃이 Fed-ISIC 2–4차와 과목 설정(10–12차) 실험을 제출했습니다. 이 페이지는 실제 진행을 기록하고, 성공하지 못한 시도도 남깁니다.',
-               'scope': '이 페이지는 진행과 방법 변화를 공개합니다. 구체적 성능 수치, 실행별 로그, 미공개 실험 자료는 비공개 연구 저장소에 둡니다. 이번 웹 업데이트에서 모델을 다시 학습하지 않았습니다.',
-               'stages': [['제출됨 · 검토 대기', '01 · 파이프라인 예비 실험', 'PathMNIST 1차는 파이프라인 점검으로만 둡니다 (11-02).'],
-                          ['제출됨 · 검토 대기', '02 · Fed-ISIC 대조 실험', 'B0·B2·B3·P1 다중 시드 실험으로 클래스별 성능과 프라이버시 비용을 비교했습니다. 주 데이터는 FLamby의 6개 클라이언트 분할입니다 (11-03).'],
-                          ['제출됨 · 검토 대기', '03 · 2단계와 수정 시도', 'P2·P2-PCA·P2-LA, 예산 탐색, 실패 진단 (11-03). ‘구현했다’가 ‘해결했다’는 뜻은 아닙니다.'],
-                          ['제출됨 · 검토 대기', '04 · 설계의 나머지 실험', 'B1·B5·P1-block·멤버십 추론 공격·흉부 영상 학습 (11-03 4차), 과목 설정의 PathMNIST 실험 (11-07).'],
-                          ['시작 전', '05 · 확장과 독립 검토', 'LoRA 버전 P1, K=10 클라이언트, ISIC 분포 변화 검증. 구성원 검토자는 아직 정해지지 않았습니다.']],
-               'findings': [['RQ1 · 현재 설정에서 지지하는 관찰', '제출자 보고: 표본이 적은 DF/VASC의 프라이버시 비용이 흔한 NV보다 크고, 흉부 영상의 탈장 레이블도 같습니다. 현재 공개 데이터 시뮬레이션과 고정 레시피의 관찰이며 모든 드문 질환에 대한 결론이 아닙니다.'],
-                            ['RQ2 · 아직 성공이라고 할 수 없음', '원래 P2는 안정적 이득이 없고, P2-PCA는 클래스마다 오르내리며, P2-LA는 제한적 개선입니다. B5와 P1-block도 소수 클래스 손실을 안정적으로 해결하지 못했습니다.'],
-                            ['RQ3 · 일부 진행', '흉부 영상 8개 분할 설정은 제출했고, K=10과 ISIC 분포 변화 검증은 시작 전입니다. 현재 결과가 임상 효과나 병원 간 일반화를 뜻하지 않습니다.']],
+               'scope': '이 페이지는 진행과 방법 변화를 기록합니다. 구체적 수치는 홈페이지 ‘진행’ 모듈과 data/medfl-data.json에 있고, 실행 로그와 코드는 비공개 연구 저장소에 있습니다.',
+               'stages': [['제출됨', '01 · 파이프라인 예비 실험', 'PathMNIST 1차는 파이프라인 점검으로만 둡니다 (11-02).'],
+                          ['제출됨', '02 · Fed-ISIC 대조 실험', 'B0·B2·B3·P1 각 시드 3개. B2→B3에서 DF/VASC 재현율이 평균 64.2%p, NV는 0.3%p 떨어졌습니다 (11-03).'],
+                          ['제출됨', '03 · 2단계와 수정 시도', '균형 정확도 P2 17.1%, P2-PCA 15.9%, P2-LA 31.1%. ‘구현’이 ‘해결’은 아닙니다 (11-03).'],
+                          ['제출됨', '04 · 설계의 나머지 실험', 'B1·B5·P1-block·멤버십 추론 공격·흉부 영상 10개 설정 (11-03부터), PathMNIST 과목 설정 유지율 96.11–96.77% (11-07).'],
+                          ['시작 전', '05 · 확장', 'LoRA 버전 P1, ISIC 분포 변화 검증, 실제 ε를 맞춘 대조 재실행.']],
+               'findings': [['RQ1 · 현재 설정에서 성립', '프라이버시를 넣으면 DF/VASC 재현율이 평균 64.2%p, NV는 0.3%p 떨어지고, 흉부 영상 10개 설정 모두에서 탈장의 AUC 비용이 가장 흔한 레이블 3개보다 큽니다. 현재 공개 데이터 시뮬레이션과 고정 레시피의 결과입니다.'],
+                            ['RQ2 · 안정적으로 해결한 방법 없음', '프라이버시를 적용한 10개 방법의 균형 정확도는 모두 31.1%(P2-LA) 이하이며, 프라이버시 없는 연합학습은 61.1%, 중앙 학습은 73.9%입니다.'],
+                            ['RQ3 · 일부 진행', '흉부 영상의 병원 설정 10개(K=3/5/10, 탈장 분산 또는 집중)는 완료했고, ISIC 분포 변화 검증은 시작 전입니다.']],
                'variants': {'P2': ['P2 · 보호된 특징 합과 개수', '1단계 모델 위에서 DP 클래스 특징 합과 개수를 공개하고, 균형 가상 특징을 만들어 분류기를 다시 학습합니다. 보고상 안정적 이득은 없었고, 표본이 적은 클래스에서는 고차원 노이즈 요약이 불안정할 수 있습니다.'],
                             'P2-PCA': ['P2-PCA · 공개 특징으로 먼저 차원 축소', 'DermaMNIST 특징으로 PCA를 맞춘 뒤 저차원에서 2단계를 수행합니다. ISIC 시험 세트와 겹치는 이미지는 뺐지만, 둘 다 HAM10000에서 왔으므로 남은 이미지는 ISIC 학습 세트에 들어 있습니다. 일부 소수 클래스 지표는 올랐으나 클래스별로 일정하지 않습니다.'],
                             'P2-LA': ['P2-LA · 보호된 개수로 예측 점수 보정', '2단계 특징 합을 공개하지 않고 가상 특징으로 다시 학습하지도 않습니다. DP 클래스 개수로 1단계 예측 점수를 보정합니다. 개선은 제한적이며, 방법마다 실제 누적 ε가 조금씩 달라 같은 실제 ε의 엄격한 비교라고 할 수 없습니다.']},
@@ -333,18 +349,18 @@ DATA['pages'] = {
                            ['BatchNorm', 'ImageNet 통계를 고정한 BatchNorm(eval)을 썼으며 GroupNorm으로 일괄 교체하지 않았습니다. 모듈 호환성과 프라이버시 전제는 기술 검토가 필요합니다.'],
                            ['데이터 사용', 'DermaMNIST는 하이퍼파라미터 선택과 P2-PCA 차원 축소에 쓰고 ISIC 시험 이미지와의 중복을 뺐으며, 남은 이미지는 ISIC 학습 세트에 들어 있습니다. NIH ChestX-ray14는 4차 흉부 영상 학습에 썼습니다.'],
                            ['관문과 실패', 'B3 seed0은 계속 진행 관문에 미달했습니다. 원래 레시피를 유지한 채 시드를 채웠고 이 이탈과 실패 기록을 남겼습니다. 관문 통과로 보지 않습니다.']]},
-        'en': {'r4': 'Round 4 report: B1, B5, P1-block, membership inference, chest X-ray (private, collaborator login)', 'r12': 'Rounds 10–12 report: PathMNIST course setting (private, collaborator login)', 'log9': 'Nov 9 trilingual change log',
-               'status': '2026-11-09 · Member submission · Pending review · Not merged into research main',
+        'en': {'r4': 'Round 4 report: B1, B5, P1-block, membership inference, chest X-ray (private, collaborator login)', 'r12': 'Rounds 10–12 report: PathMNIST course setting (private, collaborator login)', 'log9': 'Nov 9 trilingual change log', 'nextTitle': 'Next', 'next': 'Compare methods again at matched actual ε; add the LoRA version of P1 and more seeds; run distribution-shift experiments on ISIC.',
+               'status': '2026-11-09 · Member submission · Results published · Not merged into research main',
                'lead': 'Fan Runkun has submitted Fed-ISIC rounds 2–4 and the course-setting runs (rounds 10–12). This page records real progress and keeps the attempts that did not work.',
-               'scope': 'This page publishes progress and method changes. Detailed values, run logs and unpublished material stay in the private research repository. No model was retrained for this update.',
-               'stages': [['Submitted · Pending review', '01 · Pipeline pilot', 'The first PathMNIST round remains a pipeline check (Nov 2).'],
-                          ['Submitted · Pending review', '02 · Fed-ISIC baselines', 'Multi-seed B0, B2, B3 and P1 runs compare per-class performance and privacy cost on the FLamby six-client split (Nov 3).'],
-                          ['Submitted · Pending review', '03 · Second stage and fixes', 'P2, P2-PCA, P2-LA, budget exploration and failure diagnosis (Nov 3). Implemented is not the same as solved.'],
-                          ['Submitted · Pending review', '04 · Remaining designed experiments', 'B1, B5, P1-block, membership-inference attacks and chest X-ray training (round 4, Nov 3); PathMNIST in the course setting (Nov 7).'],
-                          ['Not started', '05 · Extension and independent review', 'LoRA version of P1, K=10 clients, distribution shift on ISIC; member reviewers are still unassigned.']],
-               'findings': [['RQ1 · Supporting observation in this setup', 'Submitter’s report: the privacy cost is larger for the sparse DF/VASC classes than for the common NV, and the same holds for the sparse Hernia label on chest X-rays. It comes from the current public-data simulation and a fixed recipe, not from all rare diseases.'],
-                            ['RQ2 · No method can be called a success yet', 'Original P2 shows no stable gain; P2-PCA moves classes up and down; P2-LA improves only a little; B5 and P1-block do not close the minority gap either.'],
-                            ['RQ3 · Partly done', 'Eight chest partition settings are submitted; K=10 and distribution shift on ISIC have not started. Current results do not show clinical benefit or cross-hospital generalization.']],
+               'scope': 'This page records progress and method changes; the numbers are in the homepage Progress module and data/medfl-data.json. Run logs and code stay in the private research repository.',
+               'stages': [['Submitted', '01 · Pipeline pilot', 'The first PathMNIST round remains a pipeline check (Nov 2).'],
+                          ['Submitted', '02 · Fed-ISIC baselines', 'B0, B2, B3 and P1 with 3 seeds each; from B2 to B3, DF/VASC recall drops 64.2 points on average and NV 0.3 (Nov 3).'],
+                          ['Submitted', '03 · Second stage and fixes', 'Balanced accuracy: P2 17.1%, P2-PCA 15.9%, P2-LA 31.1%. Implemented is not the same as solved (Nov 3).'],
+                          ['Submitted', '04 · Remaining designed experiments', 'B1, B5, P1-block, membership inference, chest X-rays in 10 settings (from Nov 3); PathMNIST course setting retains 96.11–96.77% (Nov 7).'],
+                          ['Not started', '05 · Extensions', 'LoRA version of P1; distribution shift on ISIC; rerun comparisons at matched actual ε.']],
+               'findings': [['RQ1 · Holds in this setup', 'With privacy, DF/VASC recall drops 64.2 points on average and NV 0.3; in all 10 chest settings Hernia loses more AUC than the three most common labels. This applies to the current public-data simulation and fixed recipe.'],
+                            ['RQ2 · No method closes the gap', 'All 10 private setups stay at or below 31.1% balanced accuracy (P2-LA), against 61.1% for non-private federated training and 73.9% for centralized training.'],
+                            ['RQ3 · Partly done', 'The 10 chest hospital settings (K=3/5/10, Hernia spread or concentrated) are done; distribution shift on ISIC has not started.']],
                'variants': {'P2': ['P2 · Protected feature sums and counts', 'On top of the first-stage model, release DP per-class feature sums and counts, build balanced virtual features and retrain the classifier. No stable gain was reported; for sparse classes, high-dimensional noisy summaries can be too unstable.'],
                             'P2-PCA': ['P2-PCA · Reduce dimensions with public features first', 'Fit PCA on DermaMNIST features, then run the second stage in fewer dimensions. Images overlapping the ISIC test set were removed, but both datasets come from HAM10000, so the remaining images sit inside the ISIC training set. Some minority metrics rose; class results were inconsistent.'],
                             'P2-LA': ['P2-LA · Adjust prediction scores with protected counts', 'No second-stage feature sums and no retraining on virtual features; DP class counts adjust the first-stage scores. Gains were limited, and actual cumulative ε differs slightly between methods, so this is not a strict same-ε comparison.']},
